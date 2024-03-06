@@ -1,3 +1,4 @@
+/*Julian Bednarek 250247 2CS3*/
 /*INCLUDES BEGIN*/
 #include "primlib.h"
 #include <stdlib.h>
@@ -6,10 +7,11 @@
 /*DEFINES BEGIN*/
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 10
+#define DISC_NO 8
 #define DISC_HEIGHT 20
 #define PEG_NO 3
 #define DISC_WIDTH_MAX SCREEN_WIDTH/((2*PEG_NO)+1)
+#define DISC_WIDTH_MIN DISC_WIDTH_MAX/2
 #define PEG_WIDTH 10
 #define PEG_SPAWN_H_CO 7.0/8
 #define PEG_COLOR YELLOW
@@ -27,7 +29,16 @@ typedef struct
 	point rightDown;
 }rect;
 /*STRUCTS END*/
+/*FUNCTIONS DECLARATIONS BEGIN*/
 
+/*Function computes position of pegs on screen*/
+/*@param pegs structures where position of pegs is stored*/
+void initializePegs(rect pegs[]);
+/*Function compuets initial poisiton of dics on screen (leftmost peg)*/
+/*@param disc structures where position of discs is stored*/
+void initializeDiscs(rect discs[]);
+/*FUNCTIONS DECLARATIONS END*/
+/*MAIN FUNCTION BEGIN*/
 int main(int argc, char* argv[])
 {
 	if (gfx_init()) {
@@ -35,10 +46,11 @@ int main(int argc, char* argv[])
 	}
 
 	rect pegs[PEG_NO];
+	rect discs[DISC_NO];
 	initializePegs(pegs);
+	initializeDiscs(discs);
 
 	
-
 	while (1)
 	{
 		gfx_filledRect(0, 0, SCREEN_WIDTH-1, SCREEN_HEIGTH-1, BLACK);
@@ -53,7 +65,8 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
+/*MAIN FUNCTION END*/
+/*FUNCTION BODY BEGIN*/
 void initializePegs(rect pegs[])
 {
 	for (size_t i = 0; i < PEG_NO; i++)
@@ -64,3 +77,8 @@ void initializePegs(rect pegs[])
 		pegs[i].leftUpper.y = pegs[i].rightDown.y - PEG_HEIGHT;
 	}
 }
+void initializeDiscs(rect discs[])
+{
+	
+}
+/*FUNCTION BODY END*/
