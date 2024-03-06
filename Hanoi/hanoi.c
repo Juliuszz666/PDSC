@@ -7,11 +7,12 @@
 /*DEFINES BEGIN*/
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 8
+#define DISC_NO 12
 #define DISC_HEIGHT 20
 #define PEG_NO 3
-#define DISC_WIDTH_MAX SCREEN_WIDTH/((2*PEG_NO)+1)
-#define DISC_WIDTH_MIN DISC_WIDTH_MAX/2
+#define DISC_WIDTH_MAX SCREEN_WIDTH/((3*PEG_NO)+1)
+#define DISC_WIDTH_MIN DISC_WIDTH_MAX/3
+#define DISC_COLOR BLUE
 #define PEG_WIDTH 10
 #define PEG_SPAWN_H_CO 7.0/8
 #define PEG_COLOR YELLOW
@@ -36,7 +37,8 @@ typedef struct
 void initializePegs(rect pegs[]);
 /*Function compuets initial poisiton of dics on screen (leftmost peg)*/
 /*@param disc structures where position of discs is stored*/
-void initializeDiscs(rect discs[]);
+/*@param pegs position of pegs*/
+void initializeDiscs(rect discs[], rect pegs[]);
 /*FUNCTIONS DECLARATIONS END*/
 /*MAIN FUNCTION BEGIN*/
 int main(int argc, char* argv[])
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
 	rect pegs[PEG_NO];
 	rect discs[DISC_NO];
 	initializePegs(pegs);
-	initializeDiscs(discs);
+	initializeDiscs(discs, pegs);
 
 	
 	while (1)
@@ -59,6 +61,11 @@ int main(int argc, char* argv[])
 		{
 			gfx_filledRect(pegs[i].leftUpper.x, pegs[i].leftUpper.y, pegs[i].rightDown.x, pegs[i].rightDown.y, PEG_COLOR);
 		}
+		for (size_t i = 0; i < DISC_NO; i++)
+		{
+			gfx_filledRect(discs[i].leftUpper.x, discs[i].leftUpper.y, discs[i].rightDown.x, discs[i].rightDown.y, DISC_COLOR);
+		}
+		
 		gfx_updateScreen();
 		gfx_pollkey();
 	}
@@ -77,8 +84,16 @@ void initializePegs(rect pegs[])
 		pegs[i].leftUpper.y = pegs[i].rightDown.y - PEG_HEIGHT;
 	}
 }
-void initializeDiscs(rect discs[])
+void initializeDiscs(rect discs[], rect pegs[])
 {
-	
+	for (size_t i = 0; i < DISC_NO; i++)
+	{
+		int disc_width = DISC_WIDTH_MAX - ((DISC_WIDTH_MAX-DISC_WIDTH_MIN)/DISC_NO)*i;
+		discs[i].rightDown.x = pegs[0].rightDown.x + disc_width;
+		discs[i].leftUpper.x = pegs[0].leftUpper.x - disc_width;
+		discs[i].rightDown.y = pegs[0].rightDown.y - (DISC_HEIGHT*i);
+		discs[i].leftUpper.y = pegs[0].rightDown.y - (DISC_HEIGHT*(i+1));
+	}
+
 }
 /*FUNCTION BODY END*/
