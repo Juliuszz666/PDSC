@@ -1,17 +1,23 @@
+/*INCLUDES BEGIN*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+/*INCLUDES END*/
+/*DEFINES BEGIN*/
 #define STR_SIZE 25
-#define SEC_BUFFER 128
+#define SEC_BUFFER 64
+/*DEFINES END*/
+/*STRUCTS BEGIN*/
 
-/*Struct for storing data*/
+/*Struct for storing person's name and surname*/
 typedef struct
 {
     char name[STR_SIZE];
     char surname[STR_SIZE];
 }person;
+/*STRUCTS END*/
+/*FUNCTION DECLARATIONS BEGIN*/
 
 /*Swapping values of struct with given indexes*/
 void swap(person* array, int index_1, int index_2);
@@ -38,8 +44,9 @@ void saveNames(person* array, const char *filename, int lines);
 Function return expanded array by 1 if it is possible, otherwise it terminates program
 parameter file is to close file in case of unsuccessful reallocing
 */
-person* expandInput(person* array, int size, FILE* file);
-
+int expandInput(person* array, int size);
+/*FUNCTION DECLARATIONS END*/
+/*MAIN FUNCTION BEGIN*/
 int main(int argc, char const *argv[])
 {
     if(argc!=3)
@@ -55,6 +62,7 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
+/*MAIN FUNCTION END*/
 
 void saveNames(person* array, const char *filename, int lines)
 {
@@ -98,6 +106,7 @@ person* getInput(const char *filename, int* lines)
 
     while (fgets(first_buffer, SEC_BUFFER, input_file))
     {
+        printf("%s\n", first_buffer);
         /*Initial verification of input*/
         file_line++;
         if(strlen(first_buffer)==1)
@@ -122,7 +131,7 @@ person* getInput(const char *filename, int* lines)
         }
         else
         {
-            input = expandInput(input, line, input_file);
+            if(expandInput(input, line)) break;
             strcpy(input[line].name, buffer[0]);
             strcpy(input[line].surname, buffer[1]);
             line++;
@@ -186,18 +195,17 @@ void swap(person* array, int index_1, int index_2)
     memmove(array[index_2].surname, buffer, STR_SIZE);
 }
 
-person* expandInput(person* array, int size, FILE* file)
+int expandInput(person* array, int size)
 {
     person* temp_val = (person*) realloc(array, sizeof(person)*(size+1));
     if(temp_val==NULL)
     {
-        printf("No memory available, possibility of memory leak\n");
-        free(array);
-        fclose(file);
-        exit(1);
+        printf("No memory available, possibility of memory leak\nFurther reading lines is stopped\n");
+        return 1;
     }
     else
     {
-        return temp_val;
+        array = temp_val;
+        return 0;
     }
 }
