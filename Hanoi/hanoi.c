@@ -1,9 +1,9 @@
 /*Julian Bednarek 250247 2CS3*/
-#include "primlib.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "primlib.h"
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
@@ -78,8 +78,8 @@ bool isLegalMove(int index, rect disc)
     if (top[index] == 0)
         on_stack_width = SCREEN_WIDTH;
     else
-        on_stack_width = stacks[index][top[index] - 1].rightDown.x - stacks[index][top[index] - 1].leftUpper.x;
-    int disc_witdh = disc.rightDown.x - disc.leftUpper.x;
+        on_stack_width = abs(stacks[index][top[index] - 1].rightDown.x - stacks[index][top[index] - 1].leftUpper.x);
+    int disc_witdh = abs(disc.rightDown.x - disc.leftUpper.x);
     if (disc_witdh < on_stack_width)
         return true;
     return false;
@@ -99,8 +99,9 @@ void initializeDiscs(rect pegs[])
     for (size_t i = 0; i < DISC_NO; i++)
     {
         int disc_width = DISC_WIDTH_MAX - ((DISC_WIDTH_MAX - DISC_WIDTH_MIN) / DISC_NO) * i;
-        stacks[0][i].rightDown.x = pegs[0].rightDown.x + disc_width;
-        stacks[0][i].leftUpper.x = pegs[0].leftUpper.x - disc_width;
+        int peg_center = pegs[0].rightDown.x - (PEG_WIDTH / 2);
+        stacks[0][i].rightDown.x = peg_center + disc_width;
+        stacks[0][i].leftUpper.x = peg_center - disc_width;
         stacks[0][i].rightDown.y = pegs[0].rightDown.y - (DISC_HEIGHT * i);
         stacks[0][i].leftUpper.y = pegs[0].rightDown.y - (DISC_HEIGHT * (i + 1));
         top[0]++;
@@ -123,9 +124,10 @@ void pushDisc(rect disc, int index)
     if ((top[index] < STACK_SIZE) && notNullRect(disc))
     {
         assert(top[index] < STACK_SIZE);
-        int disc_width = (disc.leftUpper.x - disc.rightDown.x) / 2;
-        disc.rightDown.x = pegs[index].rightDown.x + disc_width;
-        disc.leftUpper.x = pegs[index].leftUpper.x - disc_width;
+        int disc_width = abs((disc.leftUpper.x - disc.rightDown.x) / 2);
+        int peg_center = pegs[index].rightDown.x - (PEG_WIDTH / 2);
+        disc.rightDown.x = peg_center + disc_width;
+        disc.leftUpper.x = peg_center - disc_width;
         disc.rightDown.y = pegs[index].rightDown.y - (DISC_HEIGHT * top[index]);
         disc.leftUpper.y = pegs[index].rightDown.y - (DISC_HEIGHT * (top[index] + 1));
         stacks[index][top[index]++] = disc;
@@ -189,8 +191,11 @@ int checkKey(int key)
             return -1;
         break;
     case SDLK_ESCAPE:
+        exit(1);
+        break;
     case SDLK_RETURN:
         printf("Placeholder\n");
+        break;
     default:
         return -1;
         break;
@@ -203,11 +208,12 @@ void action(int src, int dest)
     int push_index = checkKey(dest);
     if (pop_index != -1 && push_index != -1)
     {
-        pop_index == 0 ? pop_index = 9 : pop_index--;
-        push_index == 0 ? push_index = 9 : push_index--;
+        pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
+        push_index == 0 ? push_index = PEG_NO - 1 : push_index--;
         rect popped = popDisc(pop_index);
         if (isLegalMove(push_index, popped))
             pushDisc(popped, push_index);
-        else pushDisc(popped, pop_index);
+        else
+            pushDisc(popped, pop_index);
     }
 }
