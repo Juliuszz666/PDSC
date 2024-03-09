@@ -8,4 +8,4 @@ qs_with_names: qs_with_names.o
 qs_with_names.o: qs_with_names.c
 
 clean:
-	-rm qs_with_names sorting
+	-rm qs_with_names.o sorting
