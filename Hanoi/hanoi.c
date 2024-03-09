@@ -45,6 +45,7 @@ void pushDisc(rect disc, int index);
 void putDisc(rect disc, int key);
 bool isKeyUsed(int key);
 bool notNullRect(rect disc);
+bool isLegalMove(int index, rect disc);
 
 int main(int argc, char *argv[])
 {
@@ -71,6 +72,18 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+bool isLegalMove(int index, rect disc)
+{
+    int on_stack_width;
+    if (top[index] == 0)
+        on_stack_width = SCREEN_WIDTH;
+    else
+        on_stack_width = stacks[index][top[index] - 1].rightDown.x - stacks[index][top[index] - 1].leftUpper.x;
+    int disc_witdh = disc.rightDown.x - disc.leftUpper.x;
+    if (disc_witdh < on_stack_width)
+        return true;
+    return false;
 }
 void initializePegs(rect pegs[])
 {
@@ -108,7 +121,7 @@ rect popDisc(int index)
 }
 void pushDisc(rect disc, int index)
 {
-    if ((top[index] < STACK_SIZE) && notNullRect(disc))
+    if ((top[index] < STACK_SIZE) && notNullRect(disc) && isLegalMove(index, disc))
     {
         assert(top[index] < STACK_SIZE);
         int disc_width = (disc.leftUpper.x - disc.rightDown.x) / 2;
