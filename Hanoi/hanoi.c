@@ -1,14 +1,15 @@
 /*Julian Bednarek 250247 2CS3*/
 #include "primlib.h"
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 6
+#define DISC_NO 4
 #define DISC_HEIGHT 20
-#define PEG_NO 5
+#define PEG_NO 3
 #define DISC_WIDTH_MAX (SCREEN_WIDTH / ((3 * PEG_NO) + 1))
 #define DISC_WIDTH_MIN (DISC_WIDTH_MAX / 3)
 #define DISC_COLOR BLUE
@@ -29,9 +30,10 @@ typedef struct
     point rightDown;
 } rect;
 
-static int top[PEG_NO] = {0};
+short top[PEG_NO] = {0};
 rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
+rect null_rect = {{0, 0}, {0, 0}};
 
 void initializePegs(rect pegs[]);
 void initializeDiscs(rect pegs[]);
@@ -40,7 +42,9 @@ void drawPegs();
 rect popDisc(int index);
 rect getDisc(int key);
 void pushDisc(rect disc, int index);
-void handleKeys(int key);
+void putDisc(rect disc, int key);
+bool isKeyUsed(int key);
+bool notNullRect(rect disc);
 
 int main(int argc, char *argv[])
 {
@@ -62,7 +66,8 @@ int main(int argc, char *argv[])
         gfx_updateScreen();
         int source = gfx_getkey();
         rect source_disc = getDisc(source);
-		int dest = gfx_getkey();
+        int dest = gfx_getkey();
+        putDisc(source_disc, dest);
     }
 
     return 0;
@@ -96,11 +101,14 @@ rect popDisc(int index)
         assert(top[index] > 0);
         return stacks[index][--top[index]];
     }
-	else return;
+    else
+    {
+        return null_rect;
+    }
 }
 void pushDisc(rect disc, int index)
 {
-    if (top[index] < STACK_SIZE)
+    if ((top[index] < STACK_SIZE) && notNullRect(disc))
     {
         assert(top[index] < STACK_SIZE);
         int disc_width = (disc.leftUpper.x - disc.rightDown.x) / 2;
@@ -109,26 +117,6 @@ void pushDisc(rect disc, int index)
         disc.rightDown.y = pegs[index].rightDown.y - (DISC_HEIGHT * top[index]);
         disc.leftUpper.y = pegs[index].rightDown.y - (DISC_HEIGHT * (top[index] + 1));
         stacks[index][top[index]++] = disc;
-    }
-}
-void handleKeys(int key)
-{
-    rect popped;
-    switch (key)
-    {
-    case SDLK_ESCAPE:
-        exit(1);
-        break;
-    case SDLK_1:
-        popped = popDisc(0);
-        pushDisc(popped, 1);
-        break;
-    case SDLK_2:
-        popped = popDisc(1);
-        pushDisc(popped, 0);
-        break;
-    default:
-        break;
     }
 }
 void drawDiscs()
@@ -152,5 +140,158 @@ void drawPegs()
     for (size_t i = 0; i < PEG_NO; i++)
     {
         gfx_filledRect(pegs[i].leftUpper.x, pegs[i].leftUpper.y, pegs[i].rightDown.x, pegs[i].rightDown.y, PEG_COLOR);
+    }
+}
+bool isKeyUsed(int key)
+{
+    if ((PEG_NO == 10) && (key > 47) && (key < 58))
+        return true;
+    else if ((key > 48) && (key <= 48 + PEG_NO))
+        return true;
+    else
+        return false;
+}
+bool notNullRect(rect disc)
+{
+    if (disc.leftUpper.x != 0)
+        return true;
+    return false;
+}
+rect getDisc(int key)
+{
+    rect popped;
+    switch (key)
+    {
+    case SDLK_1:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(0);
+        }
+        break;
+    case SDLK_2:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(1);
+        }
+        break;
+    case SDLK_3:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(2);
+        }
+        break;
+    case SDLK_4:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(3);
+        }
+        break;
+    case SDLK_5:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(4);
+        }
+        break;
+    case SDLK_6:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(5);
+        }
+        break;
+    case SDLK_7:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(6);
+        }
+        break;
+    case SDLK_8:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(7);
+        }
+        break;
+    case SDLK_9:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(8);
+        }
+        break;
+    case SDLK_0:
+        if (isKeyUsed(key))
+        {
+            popped = popDisc(9);
+        }
+        break;
+    default:
+        break;
+    }
+    return popped;
+}
+void putDisc(rect disc, int key)
+{
+    switch (key)
+    {
+    case SDLK_1:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 0);
+        }
+        break;
+    case SDLK_2:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 1);
+        }
+        break;
+    case SDLK_3:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 2);
+        }
+        break;
+    case SDLK_4:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 3);
+        }
+        break;
+    case SDLK_5:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 4);
+        }
+        break;
+    case SDLK_6:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 5);
+        }
+        break;
+    case SDLK_7:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 6);
+        }
+        break;
+    case SDLK_8:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 7);
+        }
+        break;
+    case SDLK_9:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 8);
+        }
+        break;
+    case SDLK_0:
+        if (isKeyUsed(key))
+        {
+            pushDisc(disc, 9);
+        }
+        break;
+    default:
+        break;
     }
 }

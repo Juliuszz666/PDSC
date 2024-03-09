@@ -29,6 +29,7 @@ typedef enum
     DECREASING
 } growing_state;
 
+void initializeVertices(point vertice[]);
 void updateVertices(point vertice[], growing_state growth);
 enum color updateColor(enum color line_color);
 point updateSize(point vertice);
@@ -42,13 +43,10 @@ int main(int argc, char *argv[])
     }
 
     point vertice[VERTICES];
-    for (size_t i = 0; i < VERTICES; i++)
-    {
-        vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE) * MIN_SIZE;
-        vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE) * MIN_SIZE;
-    }
     growing_state growth = INCREASING;
     enum color line_color = 1;
+
+    initializeVertices(vertice);
 
     while (1)
     {
@@ -136,4 +134,12 @@ point rotateVertice(point vertice)
     vertice.x = CENTER_X + ((old_value.x - CENTER_X) * cos(ROT_STEP)) - ((old_value.y - CENTER_Y) * sin(ROT_STEP));
     vertice.y = CENTER_Y + ((old_value.x - CENTER_X) * sin(ROT_STEP)) + ((old_value.y - CENTER_Y) * cos(ROT_STEP));
     return vertice;
+}
+void initializeVertices(point vertice[])
+{
+    for (size_t i = 0; i < VERTICES; i++)
+    {
+        vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE) * MIN_SIZE;
+        vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE) * MIN_SIZE;
+    }
 }
