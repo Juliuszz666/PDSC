@@ -1,23 +1,25 @@
 /*Julian Bednarek 250247 2CS3*/
+#include "primlib.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "primlib.h"
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 4
+#define DISC_NO 7
 #define DISC_HEIGHT 20
-#define PEG_NO 3
+#define PEG_NO 4
 #define DISC_WIDTH_MAX (SCREEN_WIDTH / ((3 * PEG_NO) + 1))
 #define DISC_WIDTH_MIN (DISC_WIDTH_MAX / 3)
 #define DISC_COLOR BLUE
 #define PEG_WIDTH 10
-#define PEG_SPAWN_H_CO (7.0 / 8)
+#define PEG_SPAWN_H_CO (15.0 / 16)
 #define PEG_COLOR YELLOW
 #define PEG_HEIGHT (DISC_HEIGHT * (DISC_NO + 2))
+#define ANIMATION_UP_DOWN_HEIGHT ((int)(SCREEN_HEIGTH * PEG_SPAWN_H_CO) - PEG_HEIGHT - 100)
 #define STACK_SIZE DISC_NO
+#define ANIMATION_STEP 2
 
 typedef struct
 {
@@ -26,8 +28,8 @@ typedef struct
 } point;
 typedef struct
 {
-    point leftUpper;
-    point rightDown;
+    point left_upper;
+    point right_down;
 } rect;
 
 short top[PEG_NO] = {0};
@@ -35,15 +37,20 @@ rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
 
+/*Function checks if ESC or ENTER were pressed and handles events assigned for these keys*/
+void checkForEvent(int key);
+int signum(int num1, int num2);
 void initializePegs(rect pegs[]);
 void initializeDiscs(rect pegs[]);
 void drawDiscs();
 void drawPegs();
+void renderGame();
 rect popDisc(int index);
-rect getDisc(int key);
+rect getTop(int index);
 void pushDisc(rect disc, int index);
-void putDisc(rect disc, int key);
+/*Function handles input keys and handles disc movement and game logic*/
 void action(int src, int dest);
+void animateMovement(rect disc, int start, int end);
 bool isKeyUsed(int key);
 bool notNullRect(rect disc);
 bool isLegalMove(int index, rect disc);
@@ -60,13 +67,13 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
-        gfx_filledRect(0, SCREEN_HEIGTH * PEG_SPAWN_H_CO, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, GREEN);
-        drawPegs();
-        drawDiscs();
+        renderGame();
         gfx_updateScreen();
         int source = gfx_getkey();
+        checkForEvent(source);
         int dest = gfx_getkey();
+        checkForEvent(dest);
+        printf("%d %d\n", source, dest);
         action(source, dest);
     }
 
@@ -75,11 +82,13 @@ int main(int argc, char *argv[])
 bool isLegalMove(int index, rect disc)
 {
     int on_stack_width;
+    if (!notNullRect(disc))
+        return false;
     if (top[index] == 0)
         on_stack_width = SCREEN_WIDTH;
     else
-        on_stack_width = abs(stacks[index][top[index] - 1].rightDown.x - stacks[index][top[index] - 1].leftUpper.x);
-    int disc_witdh = abs(disc.rightDown.x - disc.leftUpper.x);
+        on_stack_width = abs(stacks[index][top[index] - 1].right_down.x - stacks[index][top[index] - 1].left_upper.x);
+    int disc_witdh = abs(disc.right_down.x - disc.left_upper.x);
     if (disc_witdh < on_stack_width)
         return true;
     return false;
@@ -88,10 +97,10 @@ void initializePegs(rect pegs[])
 {
     for (size_t i = 0; i < PEG_NO; i++)
     {
-        pegs[i].rightDown.x = ((SCREEN_WIDTH / (PEG_NO + 1)) * (i + 1)) + PEG_WIDTH / 2;
-        pegs[i].leftUpper.x = pegs[i].rightDown.x - PEG_WIDTH;
-        pegs[i].rightDown.y = SCREEN_HEIGTH * PEG_SPAWN_H_CO;
-        pegs[i].leftUpper.y = pegs[i].rightDown.y - PEG_HEIGHT;
+        pegs[i].right_down.x = ((SCREEN_WIDTH / (PEG_NO + 1)) * (i + 1)) + PEG_WIDTH / 2;
+        pegs[i].left_upper.x = pegs[i].right_down.x - PEG_WIDTH;
+        pegs[i].right_down.y = SCREEN_HEIGTH * PEG_SPAWN_H_CO;
+        pegs[i].left_upper.y = pegs[i].right_down.y - PEG_HEIGHT;
     }
 }
 void initializeDiscs(rect pegs[])
@@ -99,11 +108,11 @@ void initializeDiscs(rect pegs[])
     for (size_t i = 0; i < DISC_NO; i++)
     {
         int disc_width = DISC_WIDTH_MAX - ((DISC_WIDTH_MAX - DISC_WIDTH_MIN) / DISC_NO) * i;
-        int peg_center = pegs[0].rightDown.x - (PEG_WIDTH / 2);
-        stacks[0][i].rightDown.x = peg_center + disc_width;
-        stacks[0][i].leftUpper.x = peg_center - disc_width;
-        stacks[0][i].rightDown.y = pegs[0].rightDown.y - (DISC_HEIGHT * i);
-        stacks[0][i].leftUpper.y = pegs[0].rightDown.y - (DISC_HEIGHT * (i + 1));
+        int peg_center = pegs[0].right_down.x - (PEG_WIDTH / 2);
+        stacks[0][i].right_down.x = peg_center + disc_width;
+        stacks[0][i].left_upper.x = peg_center - disc_width;
+        stacks[0][i].right_down.y = pegs[0].right_down.y - (DISC_HEIGHT * i);
+        stacks[0][i].left_upper.y = pegs[0].right_down.y - (DISC_HEIGHT * (i + 1));
         top[0]++;
     }
 }
@@ -124,12 +133,12 @@ void pushDisc(rect disc, int index)
     if ((top[index] < STACK_SIZE) && notNullRect(disc))
     {
         assert(top[index] < STACK_SIZE);
-        int disc_width = abs((disc.leftUpper.x - disc.rightDown.x) / 2);
-        int peg_center = pegs[index].rightDown.x - (PEG_WIDTH / 2);
-        disc.rightDown.x = peg_center + disc_width;
-        disc.leftUpper.x = peg_center - disc_width;
-        disc.rightDown.y = pegs[index].rightDown.y - (DISC_HEIGHT * top[index]);
-        disc.leftUpper.y = pegs[index].rightDown.y - (DISC_HEIGHT * (top[index] + 1));
+        int disc_width = abs((disc.left_upper.x - disc.right_down.x) / 2);
+        int peg_center = pegs[index].right_down.x - (PEG_WIDTH / 2);
+        disc.right_down.x = peg_center + disc_width;
+        disc.left_upper.x = peg_center - disc_width;
+        disc.right_down.y = pegs[index].right_down.y - (DISC_HEIGHT * top[index]);
+        disc.left_upper.y = pegs[index].right_down.y - (DISC_HEIGHT * (top[index] + 1));
         stacks[index][top[index]++] = disc;
     }
 }
@@ -141,8 +150,8 @@ void drawDiscs()
         short disc_index = 0;
         while (disc_index < top[peg_index])
         {
-            gfx_filledRect(stacks[peg_index][disc_index].leftUpper.x, stacks[peg_index][disc_index].leftUpper.y,
-                           stacks[peg_index][disc_index].rightDown.x, stacks[peg_index][disc_index].rightDown.y,
+            gfx_filledRect(stacks[peg_index][disc_index].left_upper.x, stacks[peg_index][disc_index].left_upper.y,
+                           stacks[peg_index][disc_index].right_down.x, stacks[peg_index][disc_index].right_down.y,
                            DISC_COLOR);
             disc_index++;
         }
@@ -153,7 +162,8 @@ void drawPegs()
 {
     for (size_t i = 0; i < PEG_NO; i++)
     {
-        gfx_filledRect(pegs[i].leftUpper.x, pegs[i].leftUpper.y, pegs[i].rightDown.x, pegs[i].rightDown.y, PEG_COLOR);
+        gfx_filledRect(pegs[i].left_upper.x, pegs[i].left_upper.y, pegs[i].right_down.x, pegs[i].right_down.y,
+                       PEG_COLOR);
     }
 }
 bool isKeyUsed(int key)
@@ -167,7 +177,7 @@ bool isKeyUsed(int key)
 }
 bool notNullRect(rect disc)
 {
-    if (disc.leftUpper.x != 0)
+    if (disc.left_upper.x != 0)
         return true;
     return false;
 }
@@ -210,10 +220,89 @@ void action(int src, int dest)
     {
         pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
         push_index == 0 ? push_index = PEG_NO - 1 : push_index--;
-        rect popped = popDisc(pop_index);
-        if (isLegalMove(push_index, popped))
+        rect to_be_popped = getTop(pop_index);
+        if (isLegalMove(push_index, to_be_popped))
+        {
+            rect popped = popDisc(pop_index);
+            animateMovement(popped, pop_index, push_index);
             pushDisc(popped, push_index);
-        else
-            pushDisc(popped, pop_index);
+        }
+    }
+}
+rect getTop(int index)
+{
+    if (top[index] > 0)
+        return stacks[index][top[index] - 1];
+    else
+        return null_rect;
+}
+void animateMovement(rect disc, int start, int end)
+{
+    while (disc.left_upper.y != ANIMATION_UP_DOWN_HEIGHT)
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForEvent(key);
+        disc.left_upper.y -= ANIMATION_STEP;
+        disc.right_down.y -= ANIMATION_STEP;
+    }
+    int direction = signum(start, end);
+    int disc_center = disc.right_down.x - ((abs(disc.left_upper.x - disc.right_down.x)) / 2);
+    int end_peg_center = pegs[end].right_down.x - (PEG_WIDTH / 2);
+    while (disc_center != end_peg_center)
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForEvent(key);
+        disc.left_upper.x += (ANIMATION_STEP * direction);
+        disc.right_down.x += (ANIMATION_STEP * direction);
+        disc_center += (ANIMATION_STEP * direction);
+    }
+    while (disc.left_upper.y != pegs[end].right_down.y - (DISC_HEIGHT * (top[end] + 1)))
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForEvent(key);
+        disc.left_upper.y += ANIMATION_STEP;
+        disc.right_down.y += ANIMATION_STEP;
+    }
+}
+void renderGame()
+{
+    gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
+    gfx_filledRect(0, SCREEN_HEIGTH * PEG_SPAWN_H_CO, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, GREEN);
+    drawPegs();
+    drawDiscs();
+}
+int signum(int num1, int num2)
+{
+    if (num1 - num2 > 0)
+        return -1;
+    if (num1 - num2 < 0)
+        return 1;
+    else
+        return 0;
+}
+void checkForEvent(int key)
+{
+    switch (key)
+    {
+    case SDLK_ESCAPE:
+        exit(1);
+        break;
+    case SDLK_RETURN:
+        printf("Placeholder\n");
+        break;
+    default:
+        break;
     }
 }
