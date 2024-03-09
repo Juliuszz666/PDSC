@@ -43,6 +43,7 @@ rect popDisc(int index);
 rect getDisc(int key);
 void pushDisc(rect disc, int index);
 void putDisc(rect disc, int key);
+void action(int src, int dest);
 bool isKeyUsed(int key);
 bool notNullRect(rect disc);
 bool isLegalMove(int index, rect disc);
@@ -63,12 +64,10 @@ int main(int argc, char *argv[])
         gfx_filledRect(0, SCREEN_HEIGTH * PEG_SPAWN_H_CO, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, GREEN);
         drawPegs();
         drawDiscs();
-
         gfx_updateScreen();
         int source = gfx_getkey();
-        rect source_disc = getDisc(source);
         int dest = gfx_getkey();
-        putDisc(source_disc, dest);
+        action(source, dest);
     }
 
     return 0;
@@ -121,7 +120,7 @@ rect popDisc(int index)
 }
 void pushDisc(rect disc, int index)
 {
-    if ((top[index] < STACK_SIZE) && notNullRect(disc) && isLegalMove(index, disc))
+    if ((top[index] < STACK_SIZE) && notNullRect(disc))
     {
         assert(top[index] < STACK_SIZE);
         int disc_width = (disc.leftUpper.x - disc.rightDown.x) / 2;
@@ -170,141 +169,45 @@ bool notNullRect(rect disc)
         return true;
     return false;
 }
-rect getDisc(int key)
+int checkKey(int key)
 {
-    rect popped;
     switch (key)
     {
     case SDLK_1:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(0);
-        }
-        break;
     case SDLK_2:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(1);
-        }
-        break;
     case SDLK_3:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(2);
-        }
-        break;
     case SDLK_4:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(3);
-        }
-        break;
     case SDLK_5:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(4);
-        }
-        break;
     case SDLK_6:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(5);
-        }
-        break;
     case SDLK_7:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(6);
-        }
-        break;
     case SDLK_8:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(7);
-        }
-        break;
     case SDLK_9:
-        if (isKeyUsed(key))
-        {
-            popped = popDisc(8);
-        }
-        break;
     case SDLK_0:
         if (isKeyUsed(key))
-        {
-            popped = popDisc(9);
-        }
+            return (key - 48);
+        else
+            return -1;
         break;
+    case SDLK_ESCAPE:
+    case SDLK_RETURN:
+        printf("Placeholder\n");
     default:
+        return -1;
         break;
     }
-    return popped;
+    return -1;
 }
-void putDisc(rect disc, int key)
+void action(int src, int dest)
 {
-    switch (key)
+    int pop_index = checkKey(src);
+    int push_index = checkKey(dest);
+    if (pop_index != -1 && push_index != -1)
     {
-    case SDLK_1:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 0);
-        }
-        break;
-    case SDLK_2:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 1);
-        }
-        break;
-    case SDLK_3:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 2);
-        }
-        break;
-    case SDLK_4:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 3);
-        }
-        break;
-    case SDLK_5:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 4);
-        }
-        break;
-    case SDLK_6:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 5);
-        }
-        break;
-    case SDLK_7:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 6);
-        }
-        break;
-    case SDLK_8:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 7);
-        }
-        break;
-    case SDLK_9:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 8);
-        }
-        break;
-    case SDLK_0:
-        if (isKeyUsed(key))
-        {
-            pushDisc(disc, 9);
-        }
-        break;
-    default:
-        break;
+        pop_index == 0 ? pop_index = 9 : pop_index--;
+        push_index == 0 ? push_index = 9 : push_index--;
+        rect popped = popDisc(pop_index);
+        if (isLegalMove(push_index, popped))
+            pushDisc(popped, push_index);
+        else pushDisc(popped, pop_index);
     }
 }
