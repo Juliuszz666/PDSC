@@ -31,6 +31,7 @@ typedef enum
 
 void initializeVertices(point vertice[]);
 void updateVertices(point vertice[], growing_state growth);
+void drawVertices(point vertice[], enum color line_color);
 enum color updateColor(enum color line_color);
 point updateSize(point vertice);
 point rotateVertice(point vertice);
@@ -52,29 +53,17 @@ int main(int argc, char *argv[])
     {
 
         gfx_filledRect(0, 0, gfx_screenWidth() - 1, gfx_screenHeight() - 1, BG_COLOR);
-
-        for (size_t i = 0; i < VERTICES; i++)
-        {
-            switch (i)
-            {
-            case VERTICES - 1:
-                gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[0].x, (int)vertice[0].y, line_color);
-                break;
-            default:
-                gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[i + 1].x, (int)vertice[i + 1].y,
-                         line_color);
-                break;
-            }
-        }
+        drawVertices(vertice, line_color);
         gfx_updateScreen();
         SDL_Delay(DELAY);
 
-        if (hypot((vertice[0].x - CENTER_X), (vertice[0].y - CENTER_Y)) > MAX_SIZE)
+        int current_size = (int)hypot((vertice[0].x - CENTER_X), (vertice[0].y - CENTER_Y));
+        if (current_size > MAX_SIZE)
         {
             growth = DECREASING;
             line_color = updateColor(line_color);
         }
-        if (hypot((vertice[0].x - CENTER_X), (vertice[0].y - CENTER_Y)) < MIN_SIZE)
+        if (current_size < MIN_SIZE)
         {
             growth = INCREASING;
             line_color = updateColor(line_color);
@@ -82,7 +71,9 @@ int main(int argc, char *argv[])
 
         updateVertices(vertice, growth);
 
-        gfx_pollkey();
+        int key = gfx_pollkey();
+        if (key == SDLK_ESCAPE)
+            exit(1);
     }
     return 0;
 }
@@ -141,5 +132,20 @@ void initializeVertices(point vertice[])
     {
         vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE) * MIN_SIZE;
         vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE) * MIN_SIZE;
+    }
+}
+void drawVertices(point vertice[], enum color line_color)
+{
+    for (size_t i = 0; i < VERTICES; i++)
+    {
+        switch (i)
+        {
+        case VERTICES - 1:
+            gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[0].x, (int)vertice[0].y, line_color);
+            break;
+        default:
+            gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[i + 1].x, (int)vertice[i + 1].y, line_color);
+            break;
+        }
     }
 }
