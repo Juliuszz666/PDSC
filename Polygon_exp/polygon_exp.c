@@ -1,15 +1,15 @@
 /*JULIAN BEDNAREK 250247 2CS3*/
 /*INCLUDES BEGIN*/
 #include "primlib.h"
-#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 /*INCLUDES END*/
 /*DEFINE BEGIN*/
 
 /*Center of screen*/
-#define CENTER_X gfx_screenWidth()/2
-#define CENTER_Y gfx_screenHeight()/2
+#define CENTER_X gfx_screenWidth() / 2
+#define CENTER_Y gfx_screenHeight() / 2
 /*Rotation step in radians*/
 #define ROT_STEP 0.01
 /*Scalar to change size of polygon*/
@@ -17,7 +17,7 @@
 /*Range of vertices*/
 #define MIN_VERTICES 3
 #define MAX_VERTICES 9
-#define CENTER_ANGLE(v) 2*M_PI/(v)
+#define CENTER_ANGLE(v) 2 * M_PI / (v)
 /*Min and max distance from vertice to center*/
 #define MIN_SIZE 50
 #define MAX_SIZE 300
@@ -32,16 +32,17 @@
 /*STRUCTS BEGIN*/
 
 /*Stuct for wrapping up vertices*/
-typedef struct {
-	double x;
-	double y;
-}point;
+typedef struct
+{
+    double x;
+    double y;
+} point;
 /*Enum type for defining the growth state of the polygon*/
 typedef enum
 {
-	INCREASING,
-	DECREASING
-}growing_state;
+    INCREASING,
+    DECREASING
+} growing_state;
 
 /*STRUCTS END*/
 /*FUNCTION DECLARATIONS BEGIN*/
@@ -64,134 +65,144 @@ int updateVerticeCount(growing_state growth, int vertice_count);
 
 /*FUNCTION DECLARATIONS END*/
 /*MAIN FUNCTION BEGIN*/
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-	/*Initializing graphics*/
-	if (gfx_init()) {
-		exit(3);
-	}
-	/*Initialization of vertices*/
-	int vertice_count = MIN_VERTICES;
-	point vertice[MAX_VERTICES];
-	for (size_t i = 0; i < vertice_count; i++)
-	{
-		vertice[i].x = CENTER_X + cos(i*CENTER_ANGLE(vertice_count))*MIN_SIZE;
-		vertice[i].y = CENTER_Y + sin(i*CENTER_ANGLE(vertice_count))*MIN_SIZE;
-	}
-	growing_state size_growth = INCREASING;
-	growing_state vert_growth = INCREASING;
-	enum color line_color = 1;
+    /*Initializing graphics*/
+    if (gfx_init())
+    {
+        exit(3);
+    }
+    /*Initialization of vertices*/
+    int vertice_count = MIN_VERTICES;
+    point vertice[MAX_VERTICES];
+    for (size_t i = 0; i < vertice_count; i++)
+    {
+        vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE(vertice_count)) * MIN_SIZE;
+        vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE(vertice_count)) * MIN_SIZE;
+    }
+    growing_state size_growth = INCREASING;
+    growing_state vert_growth = INCREASING;
+    enum color line_color = 1;
 
-	/*INFINITE LOOP BEGIN*/
-	while (1)
-	{
-		/*Clearing screen*/
-		gfx_filledRect(0, 0, gfx_screenWidth()-1, gfx_screenHeight()-1, BG_COLOR);
-		/*Drawing vertices*/
-		for (size_t i = 0; i < vertice_count; i++)
-		{
-			if(i==vertice_count-1) gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[0].x, (int)vertice[0].y, line_color);
-			else gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[i+1].x, (int)vertice[i+1].y, line_color);
-		}
-		gfx_updateScreen();
-		SDL_Delay(DELAY);
+    /*INFINITE LOOP BEGIN*/
+    while (1)
+    {
+        /*Clearing screen*/
+        gfx_filledRect(0, 0, gfx_screenWidth() - 1, gfx_screenHeight() - 1, BG_COLOR);
+        /*Drawing vertices*/
+        for (size_t i = 0; i < vertice_count; i++)
+        {
+            if (i == vertice_count - 1)
+                gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[0].x, (int)vertice[0].y, line_color);
+            else
+                gfx_line((int)vertice[i].x, (int)vertice[i].y, (int)vertice[i + 1].x, (int)vertice[i + 1].y,
+                         line_color);
+        }
+        gfx_updateScreen();
+        SDL_Delay(DELAY);
 
-		/*Setting growth of number of vertices*/
-		if(vertice_count==MAX_VERTICES) vert_growth = DECREASING;
-		if(vertice_count==MIN_VERTICES) vert_growth = INCREASING;
-		/*Setting proper growth depending of size of the polygon*/
-		if(hypot((vertice[0].x-CENTER_X), (vertice[0].y-CENTER_Y))>MAX_SIZE-1)
-		{
-			size_growth = DECREASING;
-			if(line_color<MAX_COLOR) line_color++;
-			else line_color = MIN_COLOR;
-			vertice_count = updateVerticeCount(vert_growth, vertice_count);
-			initializeNewPolygon(vertice, vertice_count);
-		}
-		if(hypot((vertice[0].x-CENTER_X), (vertice[0].y-CENTER_Y))<MIN_SIZE-1)
-		{
-			size_growth = INCREASING;
-			if(line_color<MAX_COLOR) line_color++;
-			else line_color = MIN_COLOR;
-			vertice_count = updateVerticeCount(vert_growth, vertice_count);
-			initializeNewPolygon(vertice, vertice_count);
-		}
-		
-		updateVerticePos(vertice, size_growth, vertice_count);		
+        /*Setting growth of number of vertices*/
+        if (vertice_count == MAX_VERTICES)
+            vert_growth = DECREASING;
+        if (vertice_count == MIN_VERTICES)
+            vert_growth = INCREASING;
+        /*Setting proper growth depending of size of the polygon*/
+        if (hypot((vertice[0].x - CENTER_X), (vertice[0].y - CENTER_Y)) > MAX_SIZE - 1)
+        {
+            size_growth = DECREASING;
+            if (line_color < MAX_COLOR)
+                line_color++;
+            else
+                line_color = MIN_COLOR;
+            vertice_count = updateVerticeCount(vert_growth, vertice_count);
+            initializeNewPolygon(vertice, vertice_count);
+        }
+        if (hypot((vertice[0].x - CENTER_X), (vertice[0].y - CENTER_Y)) < MIN_SIZE - 1)
+        {
+            size_growth = INCREASING;
+            if (line_color < MAX_COLOR)
+                line_color++;
+            else
+                line_color = MIN_COLOR;
+            vertice_count = updateVerticeCount(vert_growth, vertice_count);
+            initializeNewPolygon(vertice, vertice_count);
+        }
 
-		gfx_pollkey();
-	}
-	/*INFINITE LOOP END*/
-	return 0;
+        updateVerticePos(vertice, size_growth, vertice_count);
+
+        gfx_pollkey();
+    }
+    /*INFINITE LOOP END*/
+    return 0;
 }
 /*MAIN FUNCTION END*/
 /*FUNCTIONS BODIES BEGIN*/
 void updateVerticePos(point vertice[], growing_state growth, int vertice_count)
 {
-	for (size_t i = 0; i < vertice_count; i++)
-		{
-			/*Increasing/decreasing size of polygon*/
-			switch (growth)
-			{
-				case INCREASING:
-					vertice[i].x += SIZE_STEP * (vertice[i].x-CENTER_X);
-					vertice[i].y += SIZE_STEP * (vertice[i].y-CENTER_Y);
-					break;
-				case DECREASING:
-					vertice[i].x -= SIZE_STEP * (vertice[i].x-CENTER_X);
-					vertice[i].y -= SIZE_STEP * (vertice[i].y-CENTER_Y);
-					break;
-				default:
-					printf("Undefined behaviour\n");
-					exit(1);
-					break;
-			}
+    for (size_t i = 0; i < vertice_count; i++)
+    {
+        /*Increasing/decreasing size of polygon*/
+        switch (growth)
+        {
+        case INCREASING:
+            vertice[i].x += SIZE_STEP * (vertice[i].x - CENTER_X);
+            vertice[i].y += SIZE_STEP * (vertice[i].y - CENTER_Y);
+            break;
+        case DECREASING:
+            vertice[i].x -= SIZE_STEP * (vertice[i].x - CENTER_X);
+            vertice[i].y -= SIZE_STEP * (vertice[i].y - CENTER_Y);
+            break;
+        default:
+            printf("Undefined behaviour\n");
+            exit(1);
+            break;
+        }
 
-			/*Saving old values for proper rotation*/
-			double oldX = vertice[i].x;
-			double oldY = vertice[i].y;
+        /*Saving old values for proper rotation*/
+        double oldX = vertice[i].x;
+        double oldY = vertice[i].y;
 
-			/*Rotating the vertices relative to center*/
-			vertice[i].x = CENTER_X + ((oldX-CENTER_X) * cos(ROT_STEP)) - ((oldY-CENTER_Y) * sin(ROT_STEP));
-			vertice[i].y = CENTER_Y + ((oldX-CENTER_X) * sin(ROT_STEP)) + ((oldY-CENTER_Y) * cos(ROT_STEP));
-		}
+        /*Rotating the vertices relative to center*/
+        vertice[i].x = CENTER_X + ((oldX - CENTER_X) * cos(ROT_STEP)) - ((oldY - CENTER_Y) * sin(ROT_STEP));
+        vertice[i].y = CENTER_Y + ((oldX - CENTER_X) * sin(ROT_STEP)) + ((oldY - CENTER_Y) * cos(ROT_STEP));
+    }
 }
 void initializeNewPolygon(point vertice[], int vertice_count)
 {
-	for (size_t i = 0; i < vertice_count; i++)
-		{
-			/*2n+1 polygon are going from MIN to MAX and 2n from MAX to MIN*/
-			switch (vertice_count%2)
-			{
-			case 0:
-				vertice[i].x = CENTER_X + cos(i*CENTER_ANGLE(vertice_count))*(MAX_SIZE-1);
-				vertice[i].y = CENTER_Y + sin(i*CENTER_ANGLE(vertice_count))*(MAX_SIZE-1);
-				break;
-			case 1:
-				vertice[i].x = CENTER_X + cos(i*CENTER_ANGLE(vertice_count))*(MIN_SIZE-1);
-				vertice[i].y = CENTER_Y + sin(i*CENTER_ANGLE(vertice_count))*(MIN_SIZE-1);
-				break;
-			
-			default:
-				break;
-			}
-		}
+    for (size_t i = 0; i < vertice_count; i++)
+    {
+        /*2n+1 polygon are going from MIN to MAX and 2n from MAX to MIN*/
+        switch (vertice_count % 2)
+        {
+        case 0:
+            vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE(vertice_count)) * (MAX_SIZE - 1);
+            vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE(vertice_count)) * (MAX_SIZE - 1);
+            break;
+        case 1:
+            vertice[i].x = CENTER_X + cos(i * CENTER_ANGLE(vertice_count)) * (MIN_SIZE - 1);
+            vertice[i].y = CENTER_Y + sin(i * CENTER_ANGLE(vertice_count)) * (MIN_SIZE - 1);
+            break;
+
+        default:
+            break;
+        }
+    }
 }
 
 int updateVerticeCount(growing_state vert_growth, int vertice_count)
 {
-	switch (vert_growth)
-		{
-		case INCREASING:
-			return ++vertice_count;
-			break;
-		case DECREASING:
-			return --vertice_count;
-			break;
-		default:
-			printf("Undefined behaviour\n");
-			exit(1);
-			break;
-		}
+    switch (vert_growth)
+    {
+    case INCREASING:
+        return ++vertice_count;
+        break;
+    case DECREASING:
+        return --vertice_count;
+        break;
+    default:
+        printf("Undefined behaviour\n");
+        exit(1);
+        break;
+    }
 }
 /*FUNCTIONS BODIES END*/
