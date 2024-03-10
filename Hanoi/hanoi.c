@@ -20,6 +20,7 @@
 #define ANIMATION_UP_DOWN_HEIGHT ((int)(SCREEN_HEIGTH * PEG_SPAWN_H_CO) - PEG_HEIGHT - 100)
 #define STACK_SIZE DISC_NO
 #define ANIMATION_STEP 2
+#define KEY_CONST 48
 
 typedef struct
 {
@@ -76,7 +77,6 @@ int main(int argc, char *argv[])
         checkForQuit(source);
         int dest = gfx_getkey();
         checkForQuit(dest);
-        printf("%d %d\n", source, dest);
         if (action(source, dest))
             break;
     }
@@ -183,7 +183,7 @@ bool isKeyUsed(int key)
 {
     if ((PEG_NO == 10) && (key > 47) && (key < 58))
         return true;
-    else if ((key > 48) && (key <= 48 + PEG_NO))
+    else if ((key > KEY_CONST) && (key <= KEY_CONST + PEG_NO))
         return true;
     else
         return false;
@@ -209,7 +209,7 @@ int checkKey(int key)
     case SDLK_9:
     case SDLK_0:
         if (isKeyUsed(key))
-            return (key - 48);
+            return (key - KEY_CONST);
         else
             return -1;
         break;
