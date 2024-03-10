@@ -37,8 +37,9 @@ rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
 
-/*Function checks if ESC or ENTER were pressed and handles events assigned for these keys*/
-void checkForEvent(int key);
+/*Function checks if ESC was pressed*/
+void checkForQuit(int key);
+/*Funtion return sign of num1 - num2*/
 int signum(int num1, int num2);
 void initializePegs(rect pegs[]);
 void initializeDiscs(rect pegs[]);
@@ -49,11 +50,13 @@ rect popDisc(int index);
 rect getTop(int index);
 void pushDisc(rect disc, int index);
 /*Function handles input keys and handles disc movement and game logic*/
-void action(int src, int dest);
+int action(int src, int dest);
 void animateMovement(rect disc, int start, int end);
 bool isKeyUsed(int key);
 bool notNullRect(rect disc);
 bool isLegalMove(int index, rect disc);
+/*Funtion returns true when player succesfully moved all discs otherwise returns false*/
+bool isWonOrLost();
 
 int main(int argc, char *argv[])
 {
@@ -70,12 +73,22 @@ int main(int argc, char *argv[])
         renderGame();
         gfx_updateScreen();
         int source = gfx_getkey();
-        checkForEvent(source);
+        checkForQuit(source);
         int dest = gfx_getkey();
-        checkForEvent(dest);
+        checkForQuit(dest);
         printf("%d %d\n", source, dest);
-        action(source, dest);
+        if (action(source, dest))
+            break;
     }
+    const char *message[2] = {"You won", "You lost"};
+    renderGame();
+    if (isWonOrLost())
+        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
+    else
+        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[1], WHITE);
+    gfx_updateScreen();
+    SDL_Delay(1000);
+    exit(3);
 
     return 0;
 }
@@ -204,7 +217,7 @@ int checkKey(int key)
         exit(1);
         break;
     case SDLK_RETURN:
-        printf("Placeholder\n");
+        return key;
         break;
     default:
         return -1;
@@ -212,10 +225,14 @@ int checkKey(int key)
     }
     return -1;
 }
-void action(int src, int dest)
+int action(int src, int dest)
 {
     int pop_index = checkKey(src);
     int push_index = checkKey(dest);
+    if (pop_index == 13 || push_index == 13)
+    {
+        return 1;
+    }
     if (pop_index != -1 && push_index != -1)
     {
         pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
@@ -228,6 +245,7 @@ void action(int src, int dest)
             pushDisc(popped, push_index);
         }
     }
+    return 0;
 }
 rect getTop(int index)
 {
@@ -245,7 +263,7 @@ void animateMovement(rect disc, int start, int end)
         gfx_updateScreen();
         SDL_Delay(10);
         int key = gfx_pollkey();
-        checkForEvent(key);
+        checkForQuit(key);
         disc.left_upper.y -= ANIMATION_STEP;
         disc.right_down.y -= ANIMATION_STEP;
     }
@@ -259,7 +277,7 @@ void animateMovement(rect disc, int start, int end)
         gfx_updateScreen();
         SDL_Delay(10);
         int key = gfx_pollkey();
-        checkForEvent(key);
+        checkForQuit(key);
         disc.left_upper.x += (ANIMATION_STEP * direction);
         disc.right_down.x += (ANIMATION_STEP * direction);
         disc_center += (ANIMATION_STEP * direction);
@@ -271,7 +289,7 @@ void animateMovement(rect disc, int start, int end)
         gfx_updateScreen();
         SDL_Delay(10);
         int key = gfx_pollkey();
-        checkForEvent(key);
+        checkForQuit(key);
         disc.left_upper.y += ANIMATION_STEP;
         disc.right_down.y += ANIMATION_STEP;
     }
@@ -292,17 +310,25 @@ int signum(int num1, int num2)
     else
         return 0;
 }
-void checkForEvent(int key)
+void checkForQuit(int key)
 {
     switch (key)
     {
     case SDLK_ESCAPE:
         exit(1);
         break;
-    case SDLK_RETURN:
-        printf("Placeholder\n");
-        break;
-    default:
-        break;
     }
+}
+bool isWonOrLost()
+{
+    if (top[0] != 0)
+        return false;
+    for (size_t i = 1; i < PEG_NO; i++)
+    {
+        if (top[i] == DISC_NO)
+        {
+            return true;
+        }
+    }
+    return false;
 }
