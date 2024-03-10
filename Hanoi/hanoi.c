@@ -7,7 +7,7 @@
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 7
+#define DISC_NO 4
 #define DISC_HEIGHT 20
 #define PEG_NO 4
 #define DISC_WIDTH_MAX (SCREEN_WIDTH / ((3 * PEG_NO) + 1))
@@ -33,7 +33,7 @@ typedef struct
     point right_down;
 } rect;
 
-short top[PEG_NO] = {0};
+int top[PEG_NO] = {0};
 rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
@@ -42,6 +42,7 @@ rect null_rect = {{0, 0}, {0, 0}};
 void checkForQuit(int key);
 /*Funtion return sign of num1 - num2*/
 int signum(int num1, int num2);
+int checkKey(int key);
 void initializePegs(rect pegs[]);
 void initializeDiscs(rect pegs[]);
 void drawDiscs();
@@ -51,8 +52,9 @@ rect popDisc(int index);
 rect getTop(int index);
 void pushDisc(rect disc, int index);
 /*Function handles input keys and handles disc movement and game logic*/
-int action(int src, int dest);
+void action(int src, int dest);
 void animateMovement(rect disc, int start, int end);
+void printMessage(const char *message[]);
 bool isKeyUsed(int key);
 bool notNullRect(rect disc);
 bool isLegalMove(int index, rect disc);
@@ -73,24 +75,90 @@ int main(int argc, char *argv[])
     {
         renderGame();
         gfx_updateScreen();
-        int source = gfx_getkey();
-        checkForQuit(source);
-        int dest = gfx_getkey();
-        checkForQuit(dest);
-        if (action(source, dest))
-            break;
+        int source = gfx_pollkey();
+        int dest = -1;
+        if (source != -1)
+        {
+            source = checkKey(source);
+            if (source == SDLK_RETURN)
+                break;
+            dest = gfx_getkey();
+            dest = checkKey(dest);
+            if (dest == SDLK_RETURN)
+                break;
+            action(source, dest);
+        }
     }
-    const char *message[2] = {"You won", "You lost"};
+    const char *message[] = {"You won", "You lost"};
     renderGame();
-    if (isWonOrLost())
-        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
-    else
-        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[1], WHITE);
+    printMessage(message);
     gfx_updateScreen();
-    SDL_Delay(1000);
+    SDL_Delay(3000);
     exit(3);
 
     return 0;
+}
+void action(int src, int dest)
+{
+    int pop_index = src;
+    int push_index = dest;
+    if (pop_index != -1 && push_index != -1)
+    {
+        pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
+        push_index == 0 ? push_index = PEG_NO - 1 : push_index--;
+        rect to_be_popped = getTop(pop_index);
+        if (isLegalMove(push_index, to_be_popped))
+        {
+            rect popped = popDisc(pop_index);
+            animateMovement(popped, pop_index, push_index);
+            pushDisc(popped, push_index);
+        }
+    }
+}
+void animateMovement(rect disc, int start, int end)
+{
+    while (disc.left_upper.y != ANIMATION_UP_DOWN_HEIGHT)
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForQuit(key);
+        disc.left_upper.y -= ANIMATION_STEP;
+        disc.right_down.y -= ANIMATION_STEP;
+    }
+    int direction = signum(start, end);
+    int disc_center = disc.right_down.x - ((abs(disc.left_upper.x - disc.right_down.x)) / 2);
+    int end_peg_center = pegs[end].right_down.x - (PEG_WIDTH / 2);
+    while (disc_center != end_peg_center)
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForQuit(key);
+        disc.left_upper.x += (ANIMATION_STEP * direction);
+        disc.right_down.x += (ANIMATION_STEP * direction);
+        disc_center += (ANIMATION_STEP * direction);
+    }
+    while (disc.left_upper.y != pegs[end].right_down.y - (DISC_HEIGHT * (top[end] + 1)))
+    {
+        renderGame();
+        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+        gfx_updateScreen();
+        SDL_Delay(10);
+        int key = gfx_pollkey();
+        checkForQuit(key);
+        disc.left_upper.y += ANIMATION_STEP;
+        disc.right_down.y += ANIMATION_STEP;
+    }
+}
+void checkForQuit(int key)
+{
+    if (key == SDLK_ESCAPE)
+        exit(3);
 }
 bool isLegalMove(int index, rect disc)
 {
@@ -198,54 +266,20 @@ int checkKey(int key)
 {
     switch (key)
     {
-    case SDLK_1:
-    case SDLK_2:
-    case SDLK_3:
-    case SDLK_4:
-    case SDLK_5:
-    case SDLK_6:
-    case SDLK_7:
-    case SDLK_8:
-    case SDLK_9:
-    case SDLK_0:
-        if (isKeyUsed(key))
-            return (key - KEY_CONST);
-        else
-            return -1;
-        break;
     case SDLK_ESCAPE:
-        exit(1);
+        exit(3);
         break;
     case SDLK_RETURN:
         return key;
         break;
     default:
-        return -1;
+        if (isKeyUsed(key))
+            return (key - KEY_CONST);
+        else
+            return -1;
         break;
     }
     return -1;
-}
-int action(int src, int dest)
-{
-    int pop_index = checkKey(src);
-    int push_index = checkKey(dest);
-    if (pop_index == 13 || push_index == 13)
-    {
-        return 1;
-    }
-    if (pop_index != -1 && push_index != -1)
-    {
-        pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
-        push_index == 0 ? push_index = PEG_NO - 1 : push_index--;
-        rect to_be_popped = getTop(pop_index);
-        if (isLegalMove(push_index, to_be_popped))
-        {
-            rect popped = popDisc(pop_index);
-            animateMovement(popped, pop_index, push_index);
-            pushDisc(popped, push_index);
-        }
-    }
-    return 0;
 }
 rect getTop(int index)
 {
@@ -253,46 +287,6 @@ rect getTop(int index)
         return stacks[index][top[index] - 1];
     else
         return null_rect;
-}
-void animateMovement(rect disc, int start, int end)
-{
-    while (disc.left_upper.y != ANIMATION_UP_DOWN_HEIGHT)
-    {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(10);
-        int key = gfx_pollkey();
-        checkForQuit(key);
-        disc.left_upper.y -= ANIMATION_STEP;
-        disc.right_down.y -= ANIMATION_STEP;
-    }
-    int direction = signum(start, end);
-    int disc_center = disc.right_down.x - ((abs(disc.left_upper.x - disc.right_down.x)) / 2);
-    int end_peg_center = pegs[end].right_down.x - (PEG_WIDTH / 2);
-    while (disc_center != end_peg_center)
-    {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(10);
-        int key = gfx_pollkey();
-        checkForQuit(key);
-        disc.left_upper.x += (ANIMATION_STEP * direction);
-        disc.right_down.x += (ANIMATION_STEP * direction);
-        disc_center += (ANIMATION_STEP * direction);
-    }
-    while (disc.left_upper.y != pegs[end].right_down.y - (DISC_HEIGHT * (top[end] + 1)))
-    {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(10);
-        int key = gfx_pollkey();
-        checkForQuit(key);
-        disc.left_upper.y += ANIMATION_STEP;
-        disc.right_down.y += ANIMATION_STEP;
-    }
 }
 void renderGame()
 {
@@ -310,15 +304,6 @@ int signum(int num1, int num2)
     else
         return 0;
 }
-void checkForQuit(int key)
-{
-    switch (key)
-    {
-    case SDLK_ESCAPE:
-        exit(1);
-        break;
-    }
-}
 bool isWonOrLost()
 {
     if (top[0] != 0)
@@ -331,4 +316,11 @@ bool isWonOrLost()
         }
     }
     return false;
+}
+void printMessage(const char *message[])
+{
+    if (isWonOrLost())
+        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
+    else
+        gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[1], WHITE);
 }
