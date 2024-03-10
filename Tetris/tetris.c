@@ -1,7 +1,9 @@
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+
 #include "pieces.h"
 #include "primlib.h"
-#include <stdlib.h>
-#include <unistd.h>
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
@@ -10,6 +12,7 @@
 #define GRID_SQAURE_SIZE 20
 #define GRID_X_DISPLACEMENT ((SCREEN_WIDTH - (GRID_WITDH * GRID_SQAURE_SIZE)) / 2)
 #define GRID_Y_DISPLACEMENT (SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE))
+#define PIECE_SIZE 4
 
 typedef struct
 {
@@ -30,15 +33,20 @@ typedef enum
     UP,
     RIGHT,
     DOWN
-} rotation;
+} rotation_enum;
 
 typedef struct
 {
-    rotation rot_state;
-} piece;
+    rect piece_layout[PIECE_SIZE][PIECE_SIZE];
+    rotation_enum rot_state;
+} piece_struct;
+
+rect null_rect = {{0, 0}, {0, 0}};
 
 void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
+piece_struct initializePiecie();
+rect initializePieceLayout(piece_struct* block);
 
 int main(int argc, char *argv[])
 {
@@ -85,3 +93,35 @@ void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT])
         }
     }
 }
+
+piece_struct initializePiecie()
+{
+    piece_struct init;
+    srand(time(NULL));
+    int piece = rand() % 7;
+    int rotation = rand() % 4;
+    int piece_array [PIECE_SIZE][PIECE_SIZE] = pieces[piece][rotation];
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            switch (piece_array[i][j])
+            {
+            case 0:
+                init.piece_layout[i][j] = null_rect;
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            default:
+                break;
+            }
+        }
+        
+    }
+    
+    return init;
+}
+
+rect initializePieceLayout(piece_struct* block);
