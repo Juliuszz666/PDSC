@@ -7,9 +7,9 @@
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 4
+#define DISC_NO 18
 #define DISC_HEIGHT 20
-#define PEG_NO 4
+#define PEG_NO 10
 #define DISC_WIDTH_MAX (SCREEN_WIDTH / ((3 * PEG_NO) + 1))
 #define DISC_WIDTH_MIN (DISC_WIDTH_MAX / 3)
 #define DISC_COLOR BLUE
@@ -19,10 +19,10 @@
 #define PEG_HEIGHT (DISC_HEIGHT * (DISC_NO + 2))
 #define ANIMATION_UP_DOWN_HEIGHT ((int)(SCREEN_HEIGTH * PEG_SPAWN_H_CO) - PEG_HEIGHT - 100)
 #define STACK_SIZE DISC_NO
-#define ANIMATION_STEP 2
+#define ANIMATION_STEP 1
 #define KEY_CONST 48
 #define FINAL_DELAY 3000
-#define ANIMATION_DELAY 10
+#define ANIMATION_DELAY 5
 
 typedef struct
 {
@@ -106,8 +106,8 @@ void action(int src, int dest)
     int push_index = dest;
     if (pop_index != -1 && push_index != -1)
     {
-        pop_index == 0 ? pop_index = PEG_NO - 1 : pop_index--;
-        push_index == 0 ? push_index = PEG_NO - 1 : push_index--;
+        pop_index == 0 ? pop_index = PEG_NO - 1 : --pop_index;
+        push_index == 0 ? push_index = PEG_NO - 1 : --push_index;
         rect to_be_popped = getTop(pop_index);
         if (isLegalMove(push_index, to_be_popped))
         {
