@@ -21,6 +21,8 @@
 #define STACK_SIZE DISC_NO
 #define ANIMATION_STEP 2
 #define KEY_CONST 48
+#define FINAL_DELAY 3000
+#define ANIMATION_DELAY 10
 
 typedef struct
 {
@@ -93,7 +95,7 @@ int main(int argc, char *argv[])
     renderGame();
     printMessage(message);
     gfx_updateScreen();
-    SDL_Delay(3000);
+    SDL_Delay(FINAL_DELAY);
     exit(3);
 
     return 0;
@@ -122,7 +124,7 @@ void animateMovement(rect disc, int start, int end)
         renderGame();
         gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
         gfx_updateScreen();
-        SDL_Delay(10);
+        SDL_Delay(ANIMATION_DELAY);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.y -= ANIMATION_STEP;
@@ -136,7 +138,7 @@ void animateMovement(rect disc, int start, int end)
         renderGame();
         gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
         gfx_updateScreen();
-        SDL_Delay(10);
+        SDL_Delay(ANIMATION_DELAY);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.x += (ANIMATION_STEP * direction);
@@ -148,7 +150,7 @@ void animateMovement(rect disc, int start, int end)
         renderGame();
         gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
         gfx_updateScreen();
-        SDL_Delay(10);
+        SDL_Delay(ANIMATION_DELAY);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.y += ANIMATION_STEP;
