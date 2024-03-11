@@ -1,8 +1,8 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdio.h>
 
 #include "pieces.h"
 #include "primlib.h"
@@ -48,6 +48,7 @@ rect null_rect = {{0, GRID_SQAURE_SIZE}, {0, GRID_SQAURE_SIZE}, 0};
 void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawPiece(piece_struct *piece);
+void fallPiece(piece_struct *piece);
 void spawnPiece(piece_struct *block, rect grid[GRID_WITDH][GRID_HEIGHT]);
 piece_struct initializePiecie();
 void initializePieceLayout(piece_struct *block, int x, int y, int code);
@@ -72,6 +73,10 @@ int main(int argc, char *argv[])
         drawGrid(grid);
         drawPiece(&current_piecie);
         gfx_updateScreen();
+
+        fallPiece(&current_piecie);
+        SDL_Delay(1000);
+
         gfx_pollkey();
     }
 
@@ -154,7 +159,7 @@ void initializePieceLayout(piece_struct *block, int x, int y, int code)
         break;
     }
     rect block_rect = {{x * GRID_SQAURE_SIZE, y * GRID_SQAURE_SIZE},
-                       {(x+1) * GRID_SQAURE_SIZE, (y + 1) * GRID_SQAURE_SIZE},
+                       {(x + 1) * GRID_SQAURE_SIZE, (y + 1) * GRID_SQAURE_SIZE},
                        rect_color};
     block->piece_layout[x][y] = block_rect;
 }
@@ -179,6 +184,20 @@ void drawPiece(piece_struct *piece)
             gfx_filledRect(piece->piece_layout[i][j].left_upper.x, piece->piece_layout[i][j].left_upper.y,
                            piece->piece_layout[i][j].right_down.x, piece->piece_layout[i][j].right_down.y,
                            piece->piece_layout[i][j].rect_color);
+        }
+    }
+}
+void fallPiece(piece_struct *piece)
+{
+    if (piece->piece_layout[0][3].right_down.y < SCREEN_HEIGTH)
+    {
+        for(size_t i = 0; i < PIECE_SIZE; i++)
+        {
+            for (size_t j = 0; j < PIECE_SIZE; j++)
+            {
+                piece->piece_layout[i][j].left_upper.y += GRID_SQAURE_SIZE;
+                piece->piece_layout[i][j].right_down.y += GRID_SQAURE_SIZE;
+            }
         }
     }
 }
