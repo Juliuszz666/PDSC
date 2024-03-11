@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
         exit(3);
     }
     piece_struct current_piecie = initializePiecie();
+    spawnPiece(&current_piecie, grid);
     while (1)
     {
         gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
@@ -110,23 +111,21 @@ piece_struct initializePiecie()
     srand(time(NULL));
     int piece = rand() % 7;
     int rotation = rand() % 4;
-    printf("piece %d  rot %d\n", piece, rotation);
-    char(*piece_array)[PIECE_SIZE][PIECE_SIZE] = &pieces[piece][rotation];
     for (size_t i = 0; i < PIECE_SIZE; i++)
     {
         for (size_t j = 0; j < PIECE_SIZE; j++)
         {
-            switch (*piece_array[i][j])
+            switch (pieces[piece][rotation][j][i])
             {
             case 0:
-                initializePieceLayout(&init, i, j, 0); // basicly null_rect
+                initializePieceLayout(&init, j, i, 0); // basicly null_rect
                 break;
             case 1:
-                initializePieceLayout(&init, i, j, 1);
+                initializePieceLayout(&init, j, i, 1);
                 break;
             case 2:
+                initializePieceLayout(&init, j, i, 2);
                 break;
-                initializePieceLayout(&init, i, j, 2);
             default:
                 printf("Undefined behaviour\n");
                 exit(3);
