@@ -46,7 +46,7 @@ rect null_rect = {{0, 0}, {0, 0}};
 void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 piece_struct initializePiecie();
-rect initializePieceLayout(piece_struct* block);
+void initializePieceLayout(piece_struct *block, int x, int y, int code);
 
 int main(int argc, char *argv[])
 {
@@ -100,7 +100,7 @@ piece_struct initializePiecie()
     srand(time(NULL));
     int piece = rand() % 7;
     int rotation = rand() % 4;
-    int piece_array [PIECE_SIZE][PIECE_SIZE] = pieces[piece][rotation];
+    int piece_array[PIECE_SIZE][PIECE_SIZE] = pieces[piece][rotation];
     for (size_t i = 0; i < PIECE_SIZE; i++)
     {
         for (size_t j = 0; j < PIECE_SIZE; j++)
@@ -111,17 +111,36 @@ piece_struct initializePiecie()
                 init.piece_layout[i][j] = null_rect;
                 break;
             case 1:
+                initializePieceLayout(&init, i, j, 1);
                 break;
             case 2:
                 break;
+                initializePieceLayout(&init, i, j, 2);
             default:
+                printf("Undefined behaviour\n");
+                exit(3);
                 break;
             }
         }
-        
     }
-    
+
     return init;
 }
 
-rect initializePieceLayout(piece_struct* block);
+void initializePieceLayout(piece_struct *block, int x, int y, int code)
+{
+    enum color rect_color;
+    switch (code)
+    {
+    case 1:
+        rect_color = YELLOW;
+        break;
+    case 2:
+        rect_color = RED;
+        break;
+    default:
+        break;
+    }
+    rect block_rect = {{x * PIECE_SIZE, (x + 1) * PIECE_SIZE}, {y * PIECE_SIZE, (y + 1) * PIECE_SIZE}, rect_color};
+    block->piece_layout[x][y] = block_rect;
+}
