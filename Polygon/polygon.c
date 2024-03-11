@@ -77,7 +77,6 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
 void updateVertices(point vertice[], growing_state growth)
 {
     for (size_t i = 0; i < VERTICES; i++)
@@ -101,7 +100,6 @@ void updateVertices(point vertice[], growing_state growth)
         vertice[i] = rotateVertice(vertice[i]);
     }
 }
-
 enum color updateColor(enum color line_color)
 {
     if (line_color < MAX_COLOR)
@@ -110,7 +108,6 @@ enum color updateColor(enum color line_color)
         line_color = MIN_COLOR;
     return line_color;
 }
-
 point updateSize(point vertice)
 {
     point growth;
@@ -118,7 +115,6 @@ point updateSize(point vertice)
     growth.y = SIZE_STEP * (vertice.y - CENTER_Y);
     return growth;
 }
-
 point rotateVertice(point vertice)
 {
     point old_value = vertice;

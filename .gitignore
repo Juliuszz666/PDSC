@@ -54,6 +54,7 @@ dkms.conf
 # vscode conf
 
 /.vscode
+*/.vscode
 .clang-format
 
 # Programs in repo
