@@ -40,6 +40,7 @@ rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
 
+void animation();
 /*Function checks if ESC was pressed*/
 void checkForQuit(int key);
 /*Funtion return sign of num1 - num2*/
@@ -92,7 +93,6 @@ int main(int argc, char *argv[])
         }
     }
     const char *message[] = {"You won", "You lost"};
-    renderGame();
     printMessage(message);
     gfx_updateScreen();
     SDL_Delay(FINAL_DELAY);
@@ -121,10 +121,7 @@ void animateMovement(rect disc, int start, int end)
 {
     while (disc.left_upper.y != ANIMATION_UP_DOWN_HEIGHT)
     {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(ANIMATION_DELAY);
+        animation(disc);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.y -= ANIMATION_STEP;
@@ -135,10 +132,7 @@ void animateMovement(rect disc, int start, int end)
     int end_peg_center = pegs[end].right_down.x - (PEG_WIDTH / 2);
     while (disc_center != end_peg_center)
     {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(ANIMATION_DELAY);
+        animation(disc);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.x += (ANIMATION_STEP * direction);
@@ -147,10 +141,7 @@ void animateMovement(rect disc, int start, int end)
     }
     while (disc.left_upper.y != pegs[end].right_down.y - (DISC_HEIGHT * (top[end] + 1)))
     {
-        renderGame();
-        gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
-        gfx_updateScreen();
-        SDL_Delay(ANIMATION_DELAY);
+        animation(disc);
         int key = gfx_pollkey();
         checkForQuit(key);
         disc.left_upper.y += ANIMATION_STEP;
@@ -325,4 +316,11 @@ void printMessage(const char *message[])
         gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
     else
         gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[1], WHITE);
+}
+void animation(rect disc)
+{
+    renderGame();
+    gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+    gfx_updateScreen();
+    SDL_Delay(ANIMATION_DELAY);
 }

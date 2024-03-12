@@ -45,6 +45,7 @@ typedef struct
 
 rect null_rect = {{0, GRID_SQAURE_SIZE}, {0, GRID_SQAURE_SIZE}, 0};
 
+void handleKeys(int key, piece_struct *piece);
 void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
 void drawPiece(piece_struct *piece);
@@ -77,7 +78,9 @@ int main(int argc, char *argv[])
         fallPiece(&current_piecie);
         SDL_Delay(1000);
 
-        gfx_pollkey();
+        int key = gfx_pollkey();
+        if (key == -1)
+            handleKeys(key, &current_piecie);
     }
 
     return 0;
@@ -191,7 +194,7 @@ void fallPiece(piece_struct *piece)
 {
     if (piece->piece_layout[0][3].right_down.y < SCREEN_HEIGTH)
     {
-        for(size_t i = 0; i < PIECE_SIZE; i++)
+        for (size_t i = 0; i < PIECE_SIZE; i++)
         {
             for (size_t j = 0; j < PIECE_SIZE; j++)
             {
@@ -199,5 +202,17 @@ void fallPiece(piece_struct *piece)
                 piece->piece_layout[i][j].right_down.y += GRID_SQAURE_SIZE;
             }
         }
+    }
+}
+void handleKeys(int key, piece_struct *piece)
+{
+    switch (key)
+    {
+    case SDLK_SPACE:
+        
+        break;
+    
+    default:
+        break;
     }
 }
