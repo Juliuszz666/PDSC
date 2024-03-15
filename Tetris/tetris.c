@@ -15,6 +15,8 @@
 #define GRID_X_DISPLACEMENT ((SCREEN_WIDTH - (GRID_WITDH * GRID_SQAURE_SIZE)) / 2)
 #define GRID_Y_DISPLACEMENT (SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE))
 #define PIECE_SIZE 4
+#define TEXT_X_CONST 120
+#define TEXT_Y_CONST 20
 
 typedef struct
 {
@@ -42,142 +44,97 @@ typedef struct
     rect piece_layout[PIECE_SIZE][PIECE_SIZE];
     rotation_enum rot_state;
     point piece_position;
+    short piece_type;
 } piece_struct;
 
-rect null_rect = {{0, GRID_SQAURE_SIZE}, {0, GRID_SQAURE_SIZE}, 0};
-
-void handleKeys(int key, piece_struct *piece);
-void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
-void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT]);
+void rotatePiece(piece_struct *piece);
+void updatePiece(piece_struct *piece);
+void handleKeys(piece_struct *piece);
+void fallPiece(piece_struct *falling_piece);
+void drawRect(rect piece_rect);
+void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
+void welcomeMenu();
+piece_struct initializePiece();
 void drawPiece(piece_struct *piece);
-void fallPiece(piece_struct *piece);
-void spawnPiece(piece_struct *block, rect grid[GRID_WITDH][GRID_HEIGHT]);
-piece_struct initializePiecie();
-void initializePieceLayout(piece_struct *block, int x, int y, int code);
-bool isNotNullRect(rect piece_rect)
-{
-    return piece_rect.rect_color == BLACK ? false : true;
-}
+void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
 
 int main(int argc, char *argv[])
 {
-    rect grid[GRID_WITDH][GRID_HEIGHT];
-    initializeGrid(grid);
     if (gfx_init())
     {
         exit(3);
     }
-    piece_struct current_piecie = initializePiecie();
-    spawnPiece(&current_piecie, grid);
+    welcomeMenu();
+    piece_struct current_piece = initializePiece();
     while (1)
     {
-        gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
-        drawGrid(grid);
-        drawPiece(&current_piecie);
+        drawPiece(&current_piece);
         gfx_updateScreen();
-
-        fallPiece(&current_piecie);
-        SDL_Delay(1000);
-
-        int key = gfx_pollkey();
-        if (key == -1)
-            handleKeys(key, &current_piecie);
+        fallPiece(&current_piece);
+        SDL_Delay(300);
+        handleKeys(&current_piece);
     }
 
     return 0;
 }
-
-void initializeGrid(rect grid[GRID_WITDH][GRID_HEIGHT])
+void welcomeMenu()
 {
-    for (size_t i = 0; i < GRID_WITDH; i++)
-    {
-        for (size_t j = 0; j < GRID_HEIGHT; j++)
-        {
-            grid[i][j].left_upper.x = (i * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT;
-            grid[i][j].left_upper.y = (j * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT;
-            grid[i][j].right_down.x = ((i + 1) * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT;
-            grid[i][j].right_down.y = ((j + 1) * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT;
-            grid[i][j].rect_color = WHITE;
-        }
-    }
+    gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
+    gfx_textout(SCREEN_WIDTH / 2 - TEXT_X_CONST, SCREEN_HEIGTH / 2 - TEXT_Y_CONST,
+                "Press any key to start a game", WHITE);
+    gfx_updateScreen();
+    gfx_getkey();
 }
-
-void drawGrid(rect grid[GRID_WITDH][GRID_HEIGHT])
-{
-    for (size_t i = 0; i < GRID_WITDH; i++)
-    {
-        for (size_t j = 0; j < GRID_HEIGHT; j++)
-        {
-            gfx_filledRect(grid[i][j].left_upper.x, grid[i][j].left_upper.y, grid[i][j].right_down.x,
-                           grid[i][j].right_down.y, grid[i][j].rect_color);
-        }
-    }
-}
-
-piece_struct initializePiecie()
+piece_struct initializePiece()
 {
     piece_struct init;
+    init.piece_position.x = SCREEN_WIDTH / 2;
+    init.piece_position.y = 0;
     srand(time(NULL));
-    int piece = rand() % 7;
-    int rotation = rand() % 4;
-    for (size_t i = 0; i < PIECE_SIZE; i++)
-    {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
-        {
-            switch (pieces[piece][rotation][j][i])
-            {
-            case 0:
-                initializePieceLayout(&init, j, i, 0); // basicly null_rect
-                break;
-            case 1:
-                initializePieceLayout(&init, j, i, 1);
-                break;
-            case 2:
-                initializePieceLayout(&init, j, i, 2);
-                break;
-            default:
-                printf("Undefined behaviour\n");
-                exit(3);
-                break;
-            }
-        }
-    }
+    init.piece_type = rand() % 7;
+    init.rot_state = rand() % 4;
+    updatePiece(&init);
+
     return init;
 }
-
-void initializePieceLayout(piece_struct *block, int x, int y, int code)
+void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color)
 {
-    enum color rect_color;
-    switch (code)
+    switch (piece_color)
     {
     case 0:
-        rect_color = BLACK;
+        piece_ptr->piece_layout[x_cord][y_cord].rect_color = BLACK;
         break;
     case 1:
-        rect_color = YELLOW;
+        piece_ptr->piece_layout[x_cord][y_cord].rect_color = YELLOW;
         break;
     case 2:
-        rect_color = RED;
+        piece_ptr->piece_layout[x_cord][y_cord].rect_color = GREEN;
         break;
     default:
         break;
     }
-    rect block_rect = {{x * GRID_SQAURE_SIZE, y * GRID_SQAURE_SIZE},
-                       {(x + 1) * GRID_SQAURE_SIZE, (y + 1) * GRID_SQAURE_SIZE},
-                       rect_color};
-    block->piece_layout[x][y] = block_rect;
 }
-void spawnPiece(piece_struct *block, rect grid[GRID_WITDH][GRID_HEIGHT])
+void fallPiece(piece_struct *falling_piece)
 {
-    int width_index = (GRID_WITDH - PIECE_SIZE) / 2;
+    falling_piece->piece_position.y += GRID_SQAURE_SIZE;
     for (size_t i = 0; i < PIECE_SIZE; i++)
     {
         for (size_t j = 0; j < PIECE_SIZE; j++)
         {
-            block->piece_layout[i][j].left_upper = grid[width_index + i][j].left_upper;
-            block->piece_layout[i][j].right_down = grid[width_index + i][j].right_down;
+            updateRectPos(falling_piece, i, j);
         }
     }
+}
+void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
+{
+    piece_ptr->piece_layout[x_cord][y_cord].left_upper.x =
+        piece_ptr->piece_position.x + (x_cord * GRID_SQAURE_SIZE);
+    piece_ptr->piece_layout[x_cord][y_cord].left_upper.y =
+        piece_ptr->piece_position.y + (y_cord * GRID_SQAURE_SIZE);
+    piece_ptr->piece_layout[x_cord][y_cord].right_down.x =
+        piece_ptr->piece_position.x + ((x_cord + 1) * GRID_SQAURE_SIZE);
+    piece_ptr->piece_layout[x_cord][y_cord].right_down.y =
+        piece_ptr->piece_position.y + ((y_cord + 1) * GRID_SQAURE_SIZE);
 }
 void drawPiece(piece_struct *piece)
 {
@@ -185,35 +142,43 @@ void drawPiece(piece_struct *piece)
     {
         for (size_t j = 0; j < PIECE_SIZE; j++)
         {
-            gfx_filledRect(piece->piece_layout[i][j].left_upper.x, piece->piece_layout[i][j].left_upper.y,
-                           piece->piece_layout[i][j].right_down.x, piece->piece_layout[i][j].right_down.y,
-                           piece->piece_layout[i][j].rect_color);
+            drawRect(piece->piece_layout[i][j]);
         }
     }
 }
-void fallPiece(piece_struct *piece)
+void drawRect(rect piece_rect)
 {
-    if (piece->piece_layout[0][3].right_down.y < SCREEN_HEIGTH)
-    {
-        for (size_t i = 0; i < PIECE_SIZE; i++)
-        {
-            for (size_t j = 0; j < PIECE_SIZE; j++)
-            {
-                piece->piece_layout[i][j].left_upper.y += GRID_SQAURE_SIZE;
-                piece->piece_layout[i][j].right_down.y += GRID_SQAURE_SIZE;
-            }
-        }
-    }
+    gfx_filledRect(piece_rect.left_upper.x, piece_rect.left_upper.y, piece_rect.right_down.x,
+                   piece_rect.right_down.y, piece_rect.rect_color);
 }
-void handleKeys(int key, piece_struct *piece)
+void handleKeys(piece_struct *piece)
 {
-    switch (key)
+    switch (gfx_pollkey())
     {
+    case SDLK_ESCAPE:
+        exit(0);
+        break;
     case SDLK_SPACE:
-        
-        break;
-    
-    default:
-        break;
+        rotatePiece(piece);
     }
+}
+void updatePiece(piece_struct *piece)
+{
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            updateRectPos(piece, i, j);
+            updateRectColor(piece, i, j, pieces[piece->piece_type][piece->rot_state][i][j]);
+        }
+    }
+}
+void rotatePiece(piece_struct *piece)
+{
+    piece->rot_state++;
+    if (piece->rot_state == 4)
+    {
+        piece->rot_state = 0;
+    }
+    updatePiece(piece);
 }
