@@ -7,7 +7,7 @@
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define DISC_NO 8
+#define DISC_NO 4
 #define DISC_HEIGHT 20
 #define PEG_NO 3
 #define DISC_WIDTH_MAX (SCREEN_WIDTH / ((3 * PEG_NO) + 1))
@@ -312,6 +312,7 @@ bool isWonOrLost()
 }
 void printMessage(const char *message[])
 {
+    renderGame();
     if (isWonOrLost())
         gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
     else

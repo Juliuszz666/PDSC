@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
         int key = gfx_pollkey();
         if (key == SDLK_ESCAPE)
-            exit(1);
+            break;
     }
     return 0;
 }
