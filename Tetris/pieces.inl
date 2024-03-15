@@ -1,6 +1,3 @@
-#ifndef __PIECIES_H__
-#define __PIECIES_H__
-
 char pieces[7 /*kind */ ][4 /* rotation */ ][4][4] =
 {
 /* square */
@@ -195,5 +192,3 @@ char pieces[7 /*kind */ ][4 /* rotation */ ][4][4] =
     }
    }
 };
-
-#endif

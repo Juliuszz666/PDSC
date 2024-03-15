@@ -4,7 +4,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "pieces.h"
+#include "pieces.inl"
 #include "primlib.h"
 
 #define SCREEN_WIDTH gfx_screenWidth()
@@ -41,6 +41,7 @@ typedef struct
 {
     rect piece_layout[PIECE_SIZE][PIECE_SIZE];
     rotation_enum rot_state;
+    point piece_position;
 } piece_struct;
 
 rect null_rect = {{0, GRID_SQAURE_SIZE}, {0, GRID_SQAURE_SIZE}, 0};
