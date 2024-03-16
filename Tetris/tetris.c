@@ -47,6 +47,8 @@ typedef struct
     short piece_type;
 } piece_struct;
 
+int grid[GRID_WITDH][GRID_HEIGHT];
+
 void rotatePiece(piece_struct *piece);
 void updatePiece(piece_struct *piece);
 void handleKeys(piece_struct *piece);

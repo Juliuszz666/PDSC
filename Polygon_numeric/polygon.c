@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	initializeVertices(vertice);
 	double ini_val = calculateAndPrintSideError(vertice);
 
-	const int STEPS = (int)pow(10, 9);
+	const int STEPS = (int)pow(10, 10);
 	int i = 0;
 
 	while (i < STEPS) {
