@@ -51,6 +51,8 @@ typedef struct
 
 rect grid[GRID_WITDH][GRID_HEIGHT] = {0};
 
+int checkCollision(piece_struct *piece);
+int findBottomBound(piece_struct *piece);
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
 void drawBoard();
 void updatePiecePos(piece_struct *piece);
@@ -91,7 +93,7 @@ int main(int argc, char *argv[])
             dumpPiece(&current_piece);
             current_piece = initializePiece();
         }
-        SDL_Delay(300);
+        SDL_Delay(150);
         handleKeys(&current_piece);
     }
 
@@ -164,7 +166,10 @@ void drawPiece(piece_struct *piece)
     {
         for (size_t j = 0; j < PIECE_SIZE; j++)
         {
-            drawRect(piece->piece_layout[i][j]);
+            if (piece->piece_layout[i][j].rect_color != BLACK)
+            {
+                drawRect(piece->piece_layout[i][j]);
+            }
         }
     }
 }
@@ -285,8 +290,7 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
 }
 void fastFall(piece_struct *piece)
 {
-    while (
-        (piece->piece_position.y + ((findBottomBound(piece) * GRID_SQAURE_SIZE)) < SCREEN_HEIGTH))
+    while (checkCollision(piece))
     {
         fallPiece(piece);
     }
@@ -330,4 +334,8 @@ void drawGrid()
             drawRect(grid[i][j]);
         }
     }
+}
+int checkCollision(piece_struct *piece)
+{
+    1;
 }

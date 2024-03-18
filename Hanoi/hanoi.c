@@ -40,7 +40,7 @@ rect pegs[PEG_NO];
 rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
 
-void animation();
+void animation(rect disc);
 /*Function checks if ESC was pressed*/
 void checkForQuit(int key);
 /*Funtion return sign of num1 - num2*/
