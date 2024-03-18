@@ -157,14 +157,23 @@ bool isLegalMove(int index, rect disc)
 {
     int on_stack_width;
     if (!notNullRect(disc))
+    {
         return false;
+    }
     if (top[index] == 0)
+    {
         on_stack_width = SCREEN_WIDTH;
+    }
     else
-        on_stack_width = abs(stacks[index][top[index] - 1].right_down.x - stacks[index][top[index] - 1].left_upper.x);
+    {
+        on_stack_width = abs(stacks[index][top[index] - 1].right_down.x -
+                             stacks[index][top[index] - 1].left_upper.x);
+    }
     int disc_witdh = abs(disc.right_down.x - disc.left_upper.x);
     if (disc_witdh < on_stack_width)
+    {
         return true;
+    }
     return false;
 }
 void initializePegs(rect pegs[])
@@ -224,9 +233,10 @@ void drawDiscs()
         short disc_index = 0;
         while (disc_index < top[peg_index])
         {
-            gfx_filledRect(stacks[peg_index][disc_index].left_upper.x, stacks[peg_index][disc_index].left_upper.y,
-                           stacks[peg_index][disc_index].right_down.x, stacks[peg_index][disc_index].right_down.y,
-                           DISC_COLOR);
+            gfx_filledRect(stacks[peg_index][disc_index].left_upper.x,
+                           stacks[peg_index][disc_index].left_upper.y,
+                           stacks[peg_index][disc_index].right_down.x,
+                           stacks[peg_index][disc_index].right_down.y, DISC_COLOR);
             disc_index++;
         }
         peg_index++;
@@ -236,23 +246,31 @@ void drawPegs()
 {
     for (size_t i = 0; i < PEG_NO; i++)
     {
-        gfx_filledRect(pegs[i].left_upper.x, pegs[i].left_upper.y, pegs[i].right_down.x, pegs[i].right_down.y,
-                       PEG_COLOR);
+        gfx_filledRect(pegs[i].left_upper.x, pegs[i].left_upper.y, pegs[i].right_down.x,
+                       pegs[i].right_down.y, PEG_COLOR);
     }
 }
 bool isKeyUsed(int key)
 {
     if ((PEG_NO == 10) && (key > 47) && (key < 58))
+    {
         return true;
+    }
     else if ((key > KEY_CONST) && (key <= KEY_CONST + PEG_NO))
+    {
         return true;
+    }
     else
+    {
         return false;
+    }
 }
 bool notNullRect(rect disc)
 {
     if (disc.left_upper.x != 0)
+    {
         return true;
+    }
     return false;
 }
 int checkKey(int key)
@@ -267,9 +285,13 @@ int checkKey(int key)
         break;
     default:
         if (isKeyUsed(key))
+        {
             return (key - KEY_CONST);
+        }
         else
+        {
             return -1;
+        }
         break;
     }
     return -1;
@@ -277,9 +299,13 @@ int checkKey(int key)
 rect getTop(int index)
 {
     if (top[index] > 0)
+    {
         return stacks[index][top[index] - 1];
+    }
     else
+    {
         return null_rect;
+    }
 }
 void renderGame()
 {
@@ -291,16 +317,24 @@ void renderGame()
 int signum(int num1, int num2)
 {
     if (num1 - num2 > 0)
+    {
         return -1;
+    }
     if (num1 - num2 < 0)
+    {
         return 1;
+    }
     else
+    {
         return 0;
+    }
 }
 bool isWonOrLost()
 {
     if (top[0] != 0)
+    {
         return false;
+    }
     for (size_t i = 1; i < PEG_NO; i++)
     {
         if (top[i] == DISC_NO)
@@ -314,14 +348,19 @@ void printMessage(const char *message[])
 {
     renderGame();
     if (isWonOrLost())
+    {
         gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[0], WHITE);
+    }
     else
+    {
         gfx_textout(SCREEN_WIDTH / 2, SCREEN_HEIGTH / 2, message[1], WHITE);
+    }
 }
 void animation(rect disc)
 {
     renderGame();
-    gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y, DISC_COLOR);
+    gfx_filledRect(disc.left_upper.x, disc.left_upper.y, disc.right_down.x, disc.right_down.y,
+                   DISC_COLOR);
     gfx_updateScreen();
     SDL_Delay(ANIMATION_DELAY);
 }

@@ -49,7 +49,7 @@ typedef struct
     short piece_type;
 } piece_struct;
 
-rect grid[GRID_WITDH][GRID_HEIGHT];
+rect grid[GRID_WITDH][GRID_HEIGHT] = {0};
 
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
 void drawBoard();
@@ -66,7 +66,9 @@ piece_struct initializePiece();
 void drawPiece(piece_struct *piece);
 void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
 void fastFall(piece_struct *piece);
-void dumpPiece(piece_struct* dumped_piece);
+void dumpPiece(piece_struct *dumped_piece);
+void drawGrid();
+void initializeGrid();
 
 int main(int argc, char *argv[])
 {
@@ -75,10 +77,12 @@ int main(int argc, char *argv[])
         exit(3);
     }
     welcomeMenu();
+    initializeGrid();
     piece_struct current_piece = initializePiece();
     while (1)
     {
         gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
+        drawGrid();
         drawPiece(&current_piece);
         drawBoard();
         gfx_updateScreen();
@@ -245,10 +249,12 @@ int findBottomBound(piece_struct *piece)
     while (index < PIECE_SIZE)
     {
         if (isRowColumnEmpty(ROW_FLAG, index, piece))
+        {
             return index;
+        }
         index++;
     }
-    return -1;
+    return 4;
 }
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
 {
@@ -258,11 +264,15 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
         {
         case ROW_FLAG:
             if (piece->piece_layout[i][index].rect_color != BLACK)
+            {
                 return false;
+            }
             break;
         case COL_FLAG:
             if (piece->piece_layout[index][i].rect_color != BLACK)
+            {
                 return false;
+            }
             break;
 
         default:
@@ -276,8 +286,48 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
 void fastFall(piece_struct *piece)
 {
     while (
-        (piece->piece_position.y + ((findBottomBound(piece)) * GRID_SQAURE_SIZE) < SCREEN_HEIGTH))
+        (piece->piece_position.y + ((findBottomBound(piece) * GRID_SQAURE_SIZE)) < SCREEN_HEIGTH))
     {
         fallPiece(piece);
+    }
+}
+void initializeGrid()
+{
+    for (size_t i = 0; i < GRID_WITDH; i++)
+    {
+        for (size_t j = 0; j < GRID_HEIGHT; j++)
+        {
+            grid[i][j] = (rect){{(i * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                                 (j * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT},
+                                {((i + 1) * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                                 ((j + 1) * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT},
+                                BLACK};
+        }
+    }
+}
+void dumpPiece(piece_struct *dumped)
+{
+    int grid_start_x = ((-GRID_X_DISPLACEMENT + dumped->piece_position.x) / (int)GRID_SQAURE_SIZE);
+    int grid_start_y = ((-GRID_Y_DISPLACEMENT + dumped->piece_position.y) / (int)GRID_SQAURE_SIZE);
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < findBottomBound(dumped); j++)
+        {
+            if (dumped->piece_layout[i][j].rect_color != BLACK)
+            {
+                grid[grid_start_x + i][grid_start_y + j] = dumped->piece_layout[i][j];
+                grid[grid_start_x + i][grid_start_y + j].rect_color = RED;
+            }
+        }
+    }
+}
+void drawGrid()
+{
+    for (size_t i = 0; i < GRID_WITDH; i++)
+    {
+        for (size_t j = 0; j < GRID_HEIGHT; j++)
+        {
+            drawRect(grid[i][j]);
+        }
     }
 }
