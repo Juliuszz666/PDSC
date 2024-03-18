@@ -41,6 +41,13 @@ typedef enum
     DOWN
 } rotation_enum;
 
+typedef enum
+{
+    MV_RIGHT,
+    MV_DOWN,
+    MV_LEFT
+} dir_enum;
+
 typedef struct
 {
     rect piece_layout[PIECE_SIZE][PIECE_SIZE];
@@ -50,9 +57,10 @@ typedef struct
 } piece_struct;
 
 rect grid[GRID_WITDH][GRID_HEIGHT] = {0};
+// const point direction_vector[3];
 
-int checkCollision(piece_struct *piece);
-int findBottomBound(piece_struct *piece);
+bool checkCollision(piece_struct *piece, point dir_vector);
+int findPieceBound(piece_struct *piece, short flag);
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
 void drawBoard();
 void updatePiecePos(piece_struct *piece);
@@ -110,7 +118,7 @@ void welcomeMenu()
 piece_struct initializePiece()
 {
     piece_struct init;
-    init.piece_position.x = SCREEN_WIDTH / 2;
+    init.piece_position.x = 0;
     init.piece_position.y = 0;
     srand(time(NULL));
     init.piece_type = rand() % 7;
@@ -139,11 +147,10 @@ void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece
 int fallPiece(piece_struct *falling_piece)
 {
     bool is_possible_move =
-        (falling_piece->piece_position.y + (findBottomBound(falling_piece) * GRID_SQAURE_SIZE) <
-         SCREEN_HEIGTH);
+        (falling_piece->piece_position.y + findPieceBound(falling_piece, ROW_FLAG) < GRID_HEIGHT);
     if (is_possible_move)
     {
-        falling_piece->piece_position.y += GRID_SQAURE_SIZE;
+        falling_piece->piece_position.y += 1;
         updatePiecePos(falling_piece);
         return 0;
     }
@@ -151,14 +158,10 @@ int fallPiece(piece_struct *falling_piece)
 }
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
 {
-    piece_ptr->piece_layout[x_cord][y_cord].left_upper.x =
-        piece_ptr->piece_position.x + (x_cord * GRID_SQAURE_SIZE);
-    piece_ptr->piece_layout[x_cord][y_cord].left_upper.y =
-        piece_ptr->piece_position.y + (y_cord * GRID_SQAURE_SIZE);
-    piece_ptr->piece_layout[x_cord][y_cord].right_down.x =
-        piece_ptr->piece_position.x + ((x_cord + 1) * GRID_SQAURE_SIZE);
-    piece_ptr->piece_layout[x_cord][y_cord].right_down.y =
-        piece_ptr->piece_position.y + ((y_cord + 1) * GRID_SQAURE_SIZE);
+    piece_ptr->piece_layout[x_cord][y_cord].left_upper.x = piece_ptr->piece_position.x + x_cord;
+    piece_ptr->piece_layout[x_cord][y_cord].left_upper.y = piece_ptr->piece_position.y + y_cord;
+    piece_ptr->piece_layout[x_cord][y_cord].right_down.x = piece_ptr->piece_position.x + x_cord + 1;
+    piece_ptr->piece_layout[x_cord][y_cord].right_down.y = piece_ptr->piece_position.y + y_cord + 1;
 }
 void drawPiece(piece_struct *piece)
 {
@@ -175,8 +178,11 @@ void drawPiece(piece_struct *piece)
 }
 void drawRect(rect piece_rect)
 {
-    gfx_filledRect(piece_rect.left_upper.x, piece_rect.left_upper.y, piece_rect.right_down.x,
-                   piece_rect.right_down.y, piece_rect.rect_color);
+    gfx_filledRect((piece_rect.left_upper.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                   (piece_rect.left_upper.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
+                   (piece_rect.right_down.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                   (piece_rect.right_down.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
+                   piece_rect.rect_color);
 }
 void handleKeys(piece_struct *piece)
 {
@@ -219,10 +225,10 @@ void movePiece(int dir, piece_struct *piece)
     switch (dir)
     {
     case -1:
-        piece->piece_position.x -= GRID_SQAURE_SIZE;
+        piece->piece_position.x -= 1;
         break;
     case 1:
-        piece->piece_position.x += GRID_SQAURE_SIZE;
+        piece->piece_position.x += 1;
         break;
     default:
         break;
@@ -248,12 +254,12 @@ void drawBoard()
              SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
              (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
 }
-int findBottomBound(piece_struct *piece)
+int findPieceBound(piece_struct *piece, short flag)
 {
     int index = 0;
     while (index < PIECE_SIZE)
     {
-        if (isRowColumnEmpty(ROW_FLAG, index, piece))
+        if (isRowColumnEmpty(flag, index, piece))
         {
             return index;
         }
@@ -290,7 +296,7 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
 }
 void fastFall(piece_struct *piece)
 {
-    while (checkCollision(piece))
+    while (checkCollision(piece, (point){0, 1}))
     {
         fallPiece(piece);
     }
@@ -301,26 +307,21 @@ void initializeGrid()
     {
         for (size_t j = 0; j < GRID_HEIGHT; j++)
         {
-            grid[i][j] = (rect){{(i * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
-                                 (j * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT},
-                                {((i + 1) * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
-                                 ((j + 1) * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT},
-                                BLACK};
+            grid[i][j] = (rect){{i, j}, {i + 1, j + 1}, BLACK};
         }
     }
 }
 void dumpPiece(piece_struct *dumped)
 {
-    int grid_start_x = ((-GRID_X_DISPLACEMENT + dumped->piece_position.x) / (int)GRID_SQAURE_SIZE);
-    int grid_start_y = ((-GRID_Y_DISPLACEMENT + dumped->piece_position.y) / (int)GRID_SQAURE_SIZE);
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    int col_no = findPieceBound(dumped, COL_FLAG);
+    int row_no = findPieceBound(dumped, ROW_FLAG);
+    for (size_t i = 0; i < col_no; i++)
     {
-        for (size_t j = 0; j < findBottomBound(dumped); j++)
+        for (size_t j = 0; j < row_no; j++)
         {
             if (dumped->piece_layout[i][j].rect_color != BLACK)
             {
-                grid[grid_start_x + i][grid_start_y + j] = dumped->piece_layout[i][j];
-                grid[grid_start_x + i][grid_start_y + j].rect_color = RED;
+                grid[dumped->piece_position.x + i][dumped->piece_position.y + j].rect_color = RED;
             }
         }
     }
@@ -335,7 +336,19 @@ void drawGrid()
         }
     }
 }
-int checkCollision(piece_struct *piece)
+bool checkCollision(piece_struct *piece, point dir_vector)
 {
-    1;
+    piece_struct test = *piece;
+    test.piece_position.y += dir_vector.y;
+    test.piece_position.x += dir_vector.x;
+    updatePiece(&test);
+
+    for (size_t i = 0; i < findPieceBound(&test, COL_FLAG); i++)
+    {
+        for (size_t j = 0; j < findPieceBound(&test, ROW_FLAG); j++)
+        {
+            1;
+        }
+    }
+    return true;
 }
