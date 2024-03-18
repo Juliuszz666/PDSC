@@ -17,6 +17,8 @@
 #define PIECE_SIZE 4
 #define TEXT_X_CONST 120
 #define TEXT_Y_CONST 20
+#define ROW_FLAG 1
+#define COL_FLAG 2
 
 typedef struct
 {
@@ -47,18 +49,24 @@ typedef struct
     short piece_type;
 } piece_struct;
 
-int grid[GRID_WITDH][GRID_HEIGHT];
+rect grid[GRID_WITDH][GRID_HEIGHT];
 
+bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
+void drawBoard();
+void updatePiecePos(piece_struct *piece);
+void movePiece(int dir, piece_struct *piece);
 void rotatePiece(piece_struct *piece);
 void updatePiece(piece_struct *piece);
 void handleKeys(piece_struct *piece);
-void fallPiece(piece_struct *falling_piece);
+int fallPiece(piece_struct *falling_piece);
 void drawRect(rect piece_rect);
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
 void welcomeMenu();
 piece_struct initializePiece();
 void drawPiece(piece_struct *piece);
 void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
+void fastFall(piece_struct *piece);
+void dumpPiece(piece_struct* dumped_piece);
 
 int main(int argc, char *argv[])
 {
@@ -70,9 +78,15 @@ int main(int argc, char *argv[])
     piece_struct current_piece = initializePiece();
     while (1)
     {
+        gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
         drawPiece(&current_piece);
+        drawBoard();
         gfx_updateScreen();
-        fallPiece(&current_piece);
+        if (fallPiece(&current_piece))
+        {
+            dumpPiece(&current_piece);
+            current_piece = initializePiece();
+        }
         SDL_Delay(300);
         handleKeys(&current_piece);
     }
@@ -116,16 +130,18 @@ void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece
         break;
     }
 }
-void fallPiece(piece_struct *falling_piece)
+int fallPiece(piece_struct *falling_piece)
 {
-    falling_piece->piece_position.y += GRID_SQAURE_SIZE;
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    bool is_possible_move =
+        (falling_piece->piece_position.y + (findBottomBound(falling_piece) * GRID_SQAURE_SIZE) <
+         SCREEN_HEIGTH);
+    if (is_possible_move)
     {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
-        {
-            updateRectPos(falling_piece, i, j);
-        }
+        falling_piece->piece_position.y += GRID_SQAURE_SIZE;
+        updatePiecePos(falling_piece);
+        return 0;
     }
+    return 1;
 }
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
 {
@@ -162,6 +178,15 @@ void handleKeys(piece_struct *piece)
         break;
     case SDLK_SPACE:
         rotatePiece(piece);
+        break;
+    case SDLK_RIGHT:
+        movePiece(1, piece);
+        break;
+    case SDLK_LEFT:
+        movePiece(-1, piece);
+        break;
+    case SDLK_DOWN:
+        fastFall(piece);
     }
 }
 void updatePiece(piece_struct *piece)
@@ -177,10 +202,82 @@ void updatePiece(piece_struct *piece)
 }
 void rotatePiece(piece_struct *piece)
 {
-    piece->rot_state++;
-    if (piece->rot_state == 4)
-    {
-        piece->rot_state = 0;
-    }
+    piece->rot_state = (piece->rot_state + 1) % 4;
     updatePiece(piece);
+}
+void movePiece(int dir, piece_struct *piece)
+{
+    switch (dir)
+    {
+    case -1:
+        piece->piece_position.x -= GRID_SQAURE_SIZE;
+        break;
+    case 1:
+        piece->piece_position.x += GRID_SQAURE_SIZE;
+        break;
+    default:
+        break;
+    }
+    updatePiecePos(piece);
+}
+void updatePiecePos(piece_struct *piece)
+{
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            updateRectPos(piece, i, j);
+        }
+    }
+}
+void drawBoard()
+{
+    gfx_line((SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
+             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
+             (SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
+    gfx_line((SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
+             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
+             (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
+}
+int findBottomBound(piece_struct *piece)
+{
+    int index = 0;
+    while (index < PIECE_SIZE)
+    {
+        if (isRowColumnEmpty(ROW_FLAG, index, piece))
+            return index;
+        index++;
+    }
+    return -1;
+}
+bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
+{
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        switch (flag)
+        {
+        case ROW_FLAG:
+            if (piece->piece_layout[i][index].rect_color != BLACK)
+                return false;
+            break;
+        case COL_FLAG:
+            if (piece->piece_layout[index][i].rect_color != BLACK)
+                return false;
+            break;
+
+        default:
+            printf("Undefined behaviour\n");
+            exit(1);
+            break;
+        }
+    }
+    return true;
+}
+void fastFall(piece_struct *piece)
+{
+    while (
+        (piece->piece_position.y + ((findBottomBound(piece)) * GRID_SQAURE_SIZE) < SCREEN_HEIGTH))
+    {
+        fallPiece(piece);
+    }
 }
