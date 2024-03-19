@@ -68,11 +68,12 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
 // placeholder basiclly subfuntion of rowToDelete()
 bool foo();
 void drawBoard();
+void removeRow(int row_to_delete);
 void updatePiecePos(piece_struct *piece);
 void movePiece(int dir, piece_struct *piece);
 void rotatePiece(piece_struct *piece);
 void updatePiece(piece_struct *piece);
-void handleKeys(piece_struct *piece);
+void handleKeys(piece_struct *piece, int key);
 void drawRect(rect piece_rect);
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
 void welcomeMenu();
@@ -109,7 +110,8 @@ int main(int argc, char *argv[])
         {
             removeRow(row_to_delete);
         }
-        handleKeys(&current_piece);
+        int key = gfx_pollkey();
+        handleKeys(&current_piece, key);
         SDL_Delay(175);
         // if (isGameOver())
         //{
@@ -166,9 +168,9 @@ void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
 }
 void drawPiece(piece_struct *piece)
 {
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    for (int i = 0; i < PIECE_SIZE; i++)
     {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
+        for (int j = 0; j < PIECE_SIZE; j++)
         {
             if (piece->piece_layout[i][j].rect_color != BLACK)
             {
@@ -197,7 +199,7 @@ int findPieceBound(piece_struct *piece, short flag)
 }
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
 {
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    for (int i = 0; i < PIECE_SIZE; i++)
     {
         switch (flag)
         {
@@ -233,9 +235,9 @@ void dumpPiece(piece_struct *dumped)
 {
     int col_no = findPieceBound(dumped, COL_FLAG);
     int row_no = findPieceBound(dumped, ROW_FLAG);
-    for (size_t i = 0; i < col_no; i++)
+    for (int i = 0; i < col_no; i++)
     {
-        for (size_t j = 0; j < row_no; j++)
+        for (int j = 0; j < row_no; j++)
         {
             if (dumped->piece_layout[i][j].rect_color != BLACK)
             {
@@ -260,9 +262,9 @@ bool checkCollision(piece_struct *piece, point dir_vector)
     {
         return false;
     }
-    for (size_t i = 0; i < col_no; i++)
+    for (int i = 0; i < col_no; i++)
     {
-        for (size_t j = 0; j < row_no; j++)
+        for (int j = 0; j < row_no; j++)
         {
             if (test.piece_layout[i][j].rect_color != BLACK)
             {
@@ -277,9 +279,9 @@ bool checkCollision(piece_struct *piece, point dir_vector)
 }
 void updatePiece(piece_struct *piece)
 {
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    for (int i = 0; i < PIECE_SIZE; i++)
     {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
+        for (int j = 0; j < PIECE_SIZE; j++)
         {
             updateRectPos(piece, i, j);
             updateRectColor(piece, i, j, pieces[piece->piece_type][piece->rot_state][i][j]);
@@ -304,9 +306,9 @@ void drawRect(rect piece_rect)
 }
 void drawGrid()
 {
-    for (size_t i = 0; i < GRID_WITDH; i++)
+    for (int i = 0; i < GRID_WITDH; i++)
     {
-        for (size_t j = 0; j < GRID_HEIGHT; j++)
+        for (int j = 0; j < GRID_HEIGHT; j++)
         {
             drawRect(grid[i][j]);
         }
@@ -314,9 +316,9 @@ void drawGrid()
 }
 void initializeGrid()
 {
-    for (size_t i = 0; i < GRID_WITDH; i++)
+    for (int i = 0; i < GRID_WITDH; i++)
     {
-        for (size_t j = 0; j < GRID_HEIGHT; j++)
+        for (int j = 0; j < GRID_HEIGHT; j++)
         {
             grid[i][j] = (rect){{i, j}, {i + 1, j + 1}, BLACK};
         }
@@ -331,9 +333,9 @@ void drawBoard()
              SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
              (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
 }
-void handleKeys(piece_struct *piece)
+void handleKeys(piece_struct *piece, int key)
 {
-    switch (gfx_pollkey())
+    switch (key)
     {
     case SDLK_ESCAPE:
         exit(0);
@@ -353,9 +355,9 @@ void handleKeys(piece_struct *piece)
 }
 void updatePiecePos(piece_struct *piece)
 {
-    for (size_t i = 0; i < PIECE_SIZE; i++)
+    for (int i = 0; i < PIECE_SIZE; i++)
     {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
+        for (int j = 0; j < PIECE_SIZE; j++)
         {
             updateRectPos(piece, i, j);
         }
@@ -381,7 +383,7 @@ void movePiece(int dir, piece_struct *piece)
 }
 int rowToDelete()
 {
-    for (size_t i = GRID_HEIGHT - 1; i >= 0; i--)
+    for (int i = GRID_HEIGHT - 1; i >= 0; i--)
     {
         if (foo(i))
         {
@@ -392,7 +394,7 @@ int rowToDelete()
 }
 bool foo(int index)
 {
-    for (size_t j = 0; j < GRID_WITDH; j++)
+    for (int j = 0; j < GRID_WITDH; j++)
     {
         if (grid[j][index].rect_color != RED)
         {
@@ -400,4 +402,24 @@ bool foo(int index)
         }
     }
     return true;
+}
+void removeRow(int row_to_delete)
+{
+    for (int i = row_to_delete; i >= 0; i--)
+    {
+        for (int j = 0; j < GRID_WITDH; j++)
+        {
+            switch (i)
+            {
+            case 0:
+                grid[j][i].rect_color = BLACK;
+                break;
+            default:
+                grid[j][i].rect_color = grid[j][i-1].rect_color;
+                break;
+            }
+        }
+        
+    }
+    
 }
