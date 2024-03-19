@@ -73,7 +73,7 @@ void updatePiecePos(piece_struct *piece);
 void movePiece(int dir, piece_struct *piece);
 void rotatePiece(piece_struct *piece);
 void updatePiece(piece_struct *piece);
-void handleKeys(piece_struct *piece, int key);
+void handleKeys(piece_struct *piece);
 void drawRect(rect piece_rect);
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
 void welcomeMenu();
@@ -110,8 +110,7 @@ int main(int argc, char *argv[])
         {
             removeRow(row_to_delete);
         }
-        int key = gfx_pollkey();
-        handleKeys(&current_piece, key);
+        handleKeys(&current_piece);
         SDL_Delay(175);
         // if (isGameOver())
         //{
@@ -333,24 +332,34 @@ void drawBoard()
              SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
              (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
 }
-void handleKeys(piece_struct *piece, int key)
+void handleKeys(piece_struct *piece)
 {
-    switch (key)
+    int key = gfx_pollkey();
+    while (key != -1)
     {
-    case SDLK_ESCAPE:
-        exit(0);
-        break;
-    case SDLK_SPACE:
-        rotatePiece(piece);
-        break;
-    case SDLK_RIGHT:
-        movePiece(1, piece);
-        break;
-    case SDLK_LEFT:
-        movePiece(-1, piece);
-        break;
-    case SDLK_DOWN:
-        fastFall(piece);
+        switch (key)
+        {
+        case SDLK_ESCAPE:
+            exit(0);
+            break;
+        case SDLK_SPACE:
+            rotatePiece(piece);
+            SDL_Delay(25);
+            break;
+        case SDLK_RIGHT:
+            movePiece(1, piece);
+            SDL_Delay(25);
+            break;
+        case SDLK_LEFT:
+            movePiece(-1, piece);
+            SDL_Delay(25);
+            break;
+        case SDLK_DOWN:
+            fastFall(piece);
+            SDL_Delay(25);
+            break;
+        }
+        key = gfx_pollkey();
     }
 }
 void updatePiecePos(piece_struct *piece)
@@ -415,11 +424,9 @@ void removeRow(int row_to_delete)
                 grid[j][i].rect_color = BLACK;
                 break;
             default:
-                grid[j][i].rect_color = grid[j][i-1].rect_color;
+                grid[j][i].rect_color = grid[j][i - 1].rect_color;
                 break;
             }
         }
-        
     }
-    
 }
