@@ -59,20 +59,23 @@ typedef struct
 rect grid[GRID_WITDH][GRID_HEIGHT] = {0};
 // const point direction_vector[3];
 
-bool checkCollision(piece_struct *piece, point dir_vector);
+piece_struct initializePiece();
+int fallPiece(piece_struct *falling_piece);
 int findPieceBound(piece_struct *piece, short flag);
+int rowToDelete();
+bool checkCollision(piece_struct *piece, point dir_vector);
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
+// placeholder basiclly subfuntion of rowToDelete()
+bool foo();
 void drawBoard();
 void updatePiecePos(piece_struct *piece);
 void movePiece(int dir, piece_struct *piece);
 void rotatePiece(piece_struct *piece);
 void updatePiece(piece_struct *piece);
 void handleKeys(piece_struct *piece);
-int fallPiece(piece_struct *falling_piece);
 void drawRect(rect piece_rect);
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
 void welcomeMenu();
-piece_struct initializePiece();
 void drawPiece(piece_struct *piece);
 void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
 void fastFall(piece_struct *piece);
@@ -101,24 +104,24 @@ int main(int argc, char *argv[])
             dumpPiece(&current_piece);
             current_piece = initializePiece();
         }
-        SDL_Delay(150);
+        int row_to_delete = rowToDelete();
+        if (row_to_delete >= 0)
+        {
+            removeRow(row_to_delete);
+        }
         handleKeys(&current_piece);
+        SDL_Delay(175);
+        // if (isGameOver())
+        //{
+        //     break;
+        // }
     }
-
     return 0;
-}
-void welcomeMenu()
-{
-    gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
-    gfx_textout(SCREEN_WIDTH / 2 - TEXT_X_CONST, SCREEN_HEIGTH / 2 - TEXT_Y_CONST,
-                "Press any key to start a game", WHITE);
-    gfx_updateScreen();
-    gfx_getkey();
 }
 piece_struct initializePiece()
 {
     piece_struct init;
-    init.piece_position.x = 0;
+    init.piece_position.x = GRID_WITDH / 2;
     init.piece_position.y = 0;
     srand(time(NULL));
     init.piece_type = rand() % 7;
@@ -146,9 +149,7 @@ void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece
 }
 int fallPiece(piece_struct *falling_piece)
 {
-    bool is_possible_move =
-        (falling_piece->piece_position.y + findPieceBound(falling_piece, ROW_FLAG) < GRID_HEIGHT);
-    if (is_possible_move)
+    if (checkCollision(falling_piece, (point){0, 1}))
     {
         falling_piece->piece_position.y += 1;
         updatePiecePos(falling_piece);
@@ -176,83 +177,10 @@ void drawPiece(piece_struct *piece)
         }
     }
 }
-void drawRect(rect piece_rect)
-{
-    gfx_filledRect((piece_rect.left_upper.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
-                   (piece_rect.left_upper.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
-                   (piece_rect.right_down.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
-                   (piece_rect.right_down.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
-                   piece_rect.rect_color);
-}
-void handleKeys(piece_struct *piece)
-{
-    switch (gfx_pollkey())
-    {
-    case SDLK_ESCAPE:
-        exit(0);
-        break;
-    case SDLK_SPACE:
-        rotatePiece(piece);
-        break;
-    case SDLK_RIGHT:
-        movePiece(1, piece);
-        break;
-    case SDLK_LEFT:
-        movePiece(-1, piece);
-        break;
-    case SDLK_DOWN:
-        fastFall(piece);
-    }
-}
-void updatePiece(piece_struct *piece)
-{
-    for (size_t i = 0; i < PIECE_SIZE; i++)
-    {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
-        {
-            updateRectPos(piece, i, j);
-            updateRectColor(piece, i, j, pieces[piece->piece_type][piece->rot_state][i][j]);
-        }
-    }
-}
 void rotatePiece(piece_struct *piece)
 {
     piece->rot_state = (piece->rot_state + 1) % 4;
     updatePiece(piece);
-}
-void movePiece(int dir, piece_struct *piece)
-{
-    switch (dir)
-    {
-    case -1:
-        piece->piece_position.x -= 1;
-        break;
-    case 1:
-        piece->piece_position.x += 1;
-        break;
-    default:
-        break;
-    }
-    updatePiecePos(piece);
-}
-void updatePiecePos(piece_struct *piece)
-{
-    for (size_t i = 0; i < PIECE_SIZE; i++)
-    {
-        for (size_t j = 0; j < PIECE_SIZE; j++)
-        {
-            updateRectPos(piece, i, j);
-        }
-    }
-}
-void drawBoard()
-{
-    gfx_line((SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
-             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
-             (SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
-    gfx_line((SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
-             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
-             (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
 }
 int findPieceBound(piece_struct *piece, short flag)
 {
@@ -301,16 +229,6 @@ void fastFall(piece_struct *piece)
         fallPiece(piece);
     }
 }
-void initializeGrid()
-{
-    for (size_t i = 0; i < GRID_WITDH; i++)
-    {
-        for (size_t j = 0; j < GRID_HEIGHT; j++)
-        {
-            grid[i][j] = (rect){{i, j}, {i + 1, j + 1}, BLACK};
-        }
-    }
-}
 void dumpPiece(piece_struct *dumped)
 {
     int col_no = findPieceBound(dumped, COL_FLAG);
@@ -326,6 +244,64 @@ void dumpPiece(piece_struct *dumped)
         }
     }
 }
+bool checkCollision(piece_struct *piece, point dir_vector)
+{
+    piece_struct test = *piece;
+    test.piece_position.x += dir_vector.x;
+    test.piece_position.y += dir_vector.y;
+    updatePiece(&test);
+    int col_no = findPieceBound(&test, COL_FLAG);
+    int row_no = findPieceBound(&test, ROW_FLAG);
+    if (test.piece_position.x < 0 || test.piece_position.x + col_no > GRID_WITDH)
+    {
+        return false;
+    }
+    if (test.piece_position.y + row_no > GRID_HEIGHT)
+    {
+        return false;
+    }
+    for (size_t i = 0; i < col_no; i++)
+    {
+        for (size_t j = 0; j < row_no; j++)
+        {
+            if (test.piece_layout[i][j].rect_color != BLACK)
+            {
+                if (grid[test.piece_position.x + i][test.piece_position.y + j].rect_color == RED)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+void updatePiece(piece_struct *piece)
+{
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            updateRectPos(piece, i, j);
+            updateRectColor(piece, i, j, pieces[piece->piece_type][piece->rot_state][i][j]);
+        }
+    }
+}
+void welcomeMenu()
+{
+    gfx_filledRect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGTH - 1, BLACK);
+    gfx_textout(SCREEN_WIDTH / 2 - TEXT_X_CONST, SCREEN_HEIGTH / 2 - TEXT_Y_CONST,
+                "Press any key to start a game", WHITE);
+    gfx_updateScreen();
+    gfx_getkey();
+}
+void drawRect(rect piece_rect)
+{
+    gfx_filledRect((piece_rect.left_upper.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                   (piece_rect.left_upper.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
+                   (piece_rect.right_down.x * GRID_SQAURE_SIZE) + GRID_X_DISPLACEMENT,
+                   (piece_rect.right_down.y * GRID_SQAURE_SIZE) + GRID_Y_DISPLACEMENT,
+                   piece_rect.rect_color);
+}
 void drawGrid()
 {
     for (size_t i = 0; i < GRID_WITDH; i++)
@@ -336,18 +312,91 @@ void drawGrid()
         }
     }
 }
-bool checkCollision(piece_struct *piece, point dir_vector)
+void initializeGrid()
 {
-    piece_struct test = *piece;
-    test.piece_position.y += dir_vector.y;
-    test.piece_position.x += dir_vector.x;
-    updatePiece(&test);
-
-    for (size_t i = 0; i < findPieceBound(&test, COL_FLAG); i++)
+    for (size_t i = 0; i < GRID_WITDH; i++)
     {
-        for (size_t j = 0; j < findPieceBound(&test, ROW_FLAG); j++)
+        for (size_t j = 0; j < GRID_HEIGHT; j++)
         {
-            1;
+            grid[i][j] = (rect){{i, j}, {i + 1, j + 1}, BLACK};
+        }
+    }
+}
+void drawBoard()
+{
+    gfx_line((SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
+             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
+             (SCREEN_WIDTH / 2) - (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
+    gfx_line((SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE),
+             SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
+             (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
+}
+void handleKeys(piece_struct *piece)
+{
+    switch (gfx_pollkey())
+    {
+    case SDLK_ESCAPE:
+        exit(0);
+        break;
+    case SDLK_SPACE:
+        rotatePiece(piece);
+        break;
+    case SDLK_RIGHT:
+        movePiece(1, piece);
+        break;
+    case SDLK_LEFT:
+        movePiece(-1, piece);
+        break;
+    case SDLK_DOWN:
+        fastFall(piece);
+    }
+}
+void updatePiecePos(piece_struct *piece)
+{
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            updateRectPos(piece, i, j);
+        }
+    }
+}
+void movePiece(int dir, piece_struct *piece)
+{
+    if (checkCollision(piece, (point){dir, 0}))
+    {
+        switch (dir)
+        {
+        case -1:
+            piece->piece_position.x -= 1;
+            break;
+        case 1:
+            piece->piece_position.x += 1;
+            break;
+        default:
+            break;
+        }
+    }
+    updatePiecePos(piece);
+}
+int rowToDelete()
+{
+    for (size_t i = GRID_HEIGHT - 1; i >= 0; i--)
+    {
+        if (foo(i))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+bool foo(int index)
+{
+    for (size_t j = 0; j < GRID_WITDH; j++)
+    {
+        if (grid[j][index].rect_color != RED)
+        {
+            return false;
         }
     }
     return true;
