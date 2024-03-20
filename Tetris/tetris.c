@@ -9,9 +9,9 @@
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define GRID_WITDH 10
-#define GRID_HEIGHT 20
-#define GRID_SQAURE_SIZE 30
+#define GRID_WITDH 20
+#define GRID_HEIGHT 30
+#define GRID_SQAURE_SIZE 20
 #define GRID_X_DISPLACEMENT ((SCREEN_WIDTH - (GRID_WITDH * GRID_SQAURE_SIZE)) / 2)
 #define GRID_Y_DISPLACEMENT (SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE))
 #define PIECE_SIZE 4
@@ -19,6 +19,7 @@
 #define TEXT_Y_CONST 20
 #define ROW_FLAG 1
 #define COL_FLAG 2
+#define BUFFER_SIZE 100
 
 typedef struct
 {
@@ -71,7 +72,7 @@ bool isGameOver();
 // name is placeholder basiclly subfuntion of rowToDelete()
 bool foo(int index);
 void drawBoard();
-void removeRow(int row_to_delete);
+void removeRow(int row_to_delete, int *score);
 void updatePiecePos(piece_struct *piece);
 void movePiece(int dir, piece_struct *piece);
 void rotatePiece(piece_struct *piece);
@@ -83,7 +84,7 @@ void welcomeMenu();
 void drawPiece(piece_struct *piece);
 void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
 void fastFall(piece_struct *piece);
-void dumpPiece(piece_struct *dumped_piece);
+void dumpPiece(piece_struct *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
 void gameOverMenu();
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
     }
     welcomeMenu();
     initializeGrid();
+    int score = 0;
     piece_struct current_piece = initializePiece();
     while (1)
     {
@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
         gfx_updateScreen();
         if (fallPiece(&current_piece))
         {
-            dumpPiece(&current_piece);
+            dumpPiece(&current_piece, &score);
             if (isGameOver())
             {
                 break;
@@ -115,12 +117,12 @@ int main(int argc, char *argv[])
         int row_to_delete = rowToDelete();
         if (row_to_delete >= 0)
         {
-            removeRow(row_to_delete);
+            removeRow(row_to_delete, &score);
         }
         handleKeys(&current_piece);
-        SDL_Delay(175);
+        SDL_Delay(125);
     }
-    gameOverMenu(0);
+    gameOverMenu(score);
     return 0;
 }
 piece_struct initializePiece()
@@ -234,7 +236,7 @@ void fastFall(piece_struct *piece)
         fallPiece(piece);
     }
 }
-void dumpPiece(piece_struct *dumped)
+void dumpPiece(piece_struct *dumped, int *score)
 {
     int col_no = findPieceBound(dumped, COL_FLAG);
     int row_no = findPieceBound(dumped, ROW_FLAG);
@@ -248,6 +250,7 @@ void dumpPiece(piece_struct *dumped)
             }
         }
     }
+    *score += 1;
 }
 bool checkCollision(piece_struct *test)
 {
@@ -348,20 +351,20 @@ void handleKeys(piece_struct *piece)
             if (checkRotCollision(piece))
             {
                 rotatePiece(piece);
-                // SDL_Delay(25);
+                SDL_Delay(25);
             }
             break;
         case SDLK_RIGHT:
             movePiece(1, piece);
-            // SDL_Delay(25);
+            SDL_Delay(25);
             break;
         case SDLK_LEFT:
             movePiece(-1, piece);
-            // SDL_Delay(25);
+            SDL_Delay(25);
             break;
         case SDLK_DOWN:
             fastFall(piece);
-            // SDL_Delay(25);
+            SDL_Delay(25);
             break;
         }
         key = gfx_pollkey();
@@ -417,7 +420,7 @@ bool foo(int index)
     }
     return true;
 }
-void removeRow(int row_to_delete)
+void removeRow(int row_to_delete, int *score)
 {
     for (int i = row_to_delete; i >= 0; i--)
     {
@@ -434,6 +437,7 @@ void removeRow(int row_to_delete)
             }
         }
     }
+    *score += 10;
 }
 bool isGameOver()
 {
@@ -450,7 +454,7 @@ void gameOverMenu(int score)
     {
         drawGrid();
         drawBoard();
-        char *score_message;
+        char score_message[BUFFER_SIZE];
         sprintf(score_message, "GAME OVER YOU SCORE IS: %d", score);
         gfx_textout(SCREEN_WIDTH / 2 - TEXT_X_CONST, SCREEN_HEIGTH / 2 - TEXT_Y_CONST,
                     score_message, WHITE);
