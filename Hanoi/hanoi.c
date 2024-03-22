@@ -1,6 +1,4 @@
-
 #include "primlib.h"
-#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,8 +20,7 @@
 #define STACK_SIZE DISC_NO
 #define ANIMATION_STEP 1
 #define KEY_CONST 48
-#define FINAL_DELAY 3000
-#define ANIMATION_DELAY 5
+#define ANIMATION_DELAY 3
 
 typedef struct
 {
@@ -42,10 +39,8 @@ rect stacks[PEG_NO][DISC_NO];
 rect null_rect = {{0, 0}, {0, 0}};
 
 void animation(rect disc);
-/*Function checks if ESC was pressed and quits if it happened*/
 void checkForQuit();
-/*Funtion return sign of num1 - num2*/
-int signum(int num1, int num2);
+int signum(int num1, int num2); // sign of num1 - num2
 int checkKey(int key);
 void initializePegs();
 void initializeDiscs();
@@ -55,7 +50,7 @@ void renderGame();
 rect popDisc(int index);
 rect getTop(int index);
 void pushDisc(rect disc, int index);
-/*Function handles input keys and handles disc movement and game logic*/
+/*Function handles disc movement and game logic*/
 void action(int src, int dest);
 void animateMovement(rect disc, int start, int end);
 void printMessage();
@@ -63,7 +58,6 @@ bool isKeyUsed(int key);
 bool notNullRect(rect disc);
 void gameLoop();
 bool isLegalMove(int index, rect disc);
-/*Funtion returns true when player succesfully moved all discs otherwise returns false*/
 bool isWonOrLost();
 
 int main(int argc, char *argv[])
@@ -299,11 +293,15 @@ void gameLoop()
         int source = gfx_getkey();
         source = checkKey(source);
         if (source == SDLK_RETURN)
+        {
             break;
+        }
         int dest = gfx_getkey();
         dest = checkKey(dest);
         if (dest == SDLK_RETURN)
+        {
             break;
+        }
         action(source, dest);
     }
 }
