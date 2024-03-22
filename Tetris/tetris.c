@@ -9,7 +9,7 @@
 
 #define SCREEN_WIDTH gfx_screenWidth()
 #define SCREEN_HEIGTH gfx_screenHeight()
-#define GRID_WITDH 20
+#define GRID_WITDH 8
 #define GRID_HEIGHT 30
 #define GRID_SQAURE_SIZE 20
 #define GRID_X_DISPLACEMENT ((SCREEN_WIDTH - (GRID_WITDH * GRID_SQAURE_SIZE)) / 2)
@@ -20,6 +20,7 @@
 #define ROW_FLAG 1
 #define COL_FLAG 2
 #define BUFFER_SIZE 100
+#define BASE_DELAY 250
 
 typedef struct
 {
@@ -120,7 +121,7 @@ int main(int argc, char *argv[])
             removeRow(row_to_delete, &score);
         }
         handleKeys(&current_piece);
-        SDL_Delay(125);
+        SDL_Delay(BASE_DELAY);
     }
     gameOverMenu(score);
     return 0;
@@ -467,6 +468,9 @@ bool checkMoveCollision(piece_struct *piece, point dir_vector)
     test.piece_position.x += dir_vector.x;
     test.piece_position.y += dir_vector.y;
     updatePiece(&test);
+    
+    return checkCollision(&test);
+    
     if (checkCollision(&test))
     {
         return true;
