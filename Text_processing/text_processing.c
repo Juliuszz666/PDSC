@@ -83,28 +83,43 @@ char **getWholeText(int *lines)
         expandInput(&input, no_of_lines);
         input[no_of_lines] = s;
         no_of_lines++;
-        printf("%s\n", s);
     }
     *lines = no_of_lines;
     return input;
 }
-char ***parseWords(char **text, int no_of_lines)
+char ***parseWords(char **text, int no_of_lines, int *word_count)
 {
     char ***words = malloc(sizeof(char **) * no_of_lines);
-    int *word_count = calloc(no_of_lines, sizeof(int));
     for (size_t i = 0; i < no_of_lines; i++)
     {
         words[i] = malloc(sizeof(char *));
-        char *s = strtok(text[i], " ");
-        while (s != NULL)
+        for (char *s = strtok(text[i], " "); s != NULL; s = strtok(NULL, " "))
         {
             expandWords(&words[i], word_count[i]);
             words[i][word_count[i]] = malloc(strlen(s) + 1);
             strcpy(words[i][word_count[i]], s);
-            s = strtok(NULL, " ");
-            printf("%s\n", words[i][word_count[i]]);
             word_count[i]++;
         }
+    }
+    return words;
+}
+void printReversedWords(char ***words, int *word_count, int no_of_lines)
+{
+    for (int i = no_of_lines - 1; i >= 0; i--)
+    {
+        for (int j = word_count[i] - 1; j >= 0; j--)
+        {
+            printf("%s", words[i][j]);
+            switch (j)
+            {
+            case 0:
+                break;
+            default:
+                printf(" ");
+                break;
+            }
+        }
+        printf("\n");
     }
 }
 
@@ -112,7 +127,9 @@ int main(int argc, char const *argv[])
 {
     int no_of_lines;
     char **text = getWholeText(&no_of_lines);
-    char ***words = parseWords(text, no_of_lines);
+    int *word_count = calloc(no_of_lines, sizeof(int));
+    char ***words = parseWords(text, no_of_lines, word_count);
+    printReversedWords(words, word_count, no_of_lines);
 
     return 0;
 }
