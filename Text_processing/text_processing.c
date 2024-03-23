@@ -36,23 +36,21 @@ void expandInput(char ***text, int size)
         *text = temp;
     }
 }
-void expandWords(char ***words, int index, int size, int no_of_lines)
+void expandWords(char ***words, int size)
 {
-    char **temp = (char **)realloc(words[index], size + 1);
+    char **temp = (char **)realloc(*words, sizeof(char *) * (size + 1));
     if (temp == NULL)
     {
         printf("Failed to allocate memory\n");
         free(temp);
         temp = 0;
-        for (size_t i = 0; i < no_of_lines; i++)
-        {
-            free(words[i]);
-            words[i] = 0;
-        }
-
         free(words);
         words = 0;
         exit(1);
+    }
+    else
+    {
+        *words = temp;
     }
 }
 
@@ -88,22 +86,33 @@ char **getWholeText(int *lines)
         printf("%s\n", s);
     }
     *lines = no_of_lines;
+    return input;
+}
+char ***parseWords(char **text, int no_of_lines)
+{
+    char ***words = malloc(sizeof(char **) * no_of_lines);
+    int *word_count = calloc(no_of_lines, sizeof(int));
+    for (size_t i = 0; i < no_of_lines; i++)
+    {
+        words[i] = malloc(sizeof(char *));
+        char *s = strtok(text[i], " ");
+        while (s != NULL)
+        {
+            expandWords(&words[i], word_count[i]);
+            words[i][word_count[i]] = malloc(strlen(s) + 1);
+            strcpy(words[i][word_count[i]], s);
+            s = strtok(NULL, " ");
+            printf("%s\n", words[i][word_count[i]]);
+            word_count[i]++;
+        }
+    }
 }
 
 int main(int argc, char const *argv[])
 {
     int no_of_lines;
     char **text = getWholeText(&no_of_lines);
-    char ***words = malloc(sizeof(char **) * no_of_lines);
-    for (size_t i = 0; i < no_of_lines; i++)
-    {
-        char *s;
-        int word_count = 0;
-        while ((s = strtok(text[i], " ")))
-        {
-            expandWords(words, i, word_count, no_of_lines);
-        }
-    }
+    char ***words = parseWords(text, no_of_lines);
 
     return 0;
 }
