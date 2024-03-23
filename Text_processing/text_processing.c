@@ -2,17 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+void failureFree(void *main, void *temp)
+{
+    printf("Failed to allocate memory\n");
+    free(temp);
+    temp = 0;
+    free(main);
+    main = 0;
+    exit(1);
+}
 void expandLine(char **line, int size)
 {
     char *temp = (char *)realloc(*line, sizeof(char) * (size + 1));
     if (temp == NULL)
     {
-        printf("Failed to allocate memory\n");
-        free(temp);
-        temp = 0;
-        free(*line);
-        line = 0;
-        exit(1);
+        failureFree((void *)*line, temp);
     }
     else
     {
@@ -20,41 +24,18 @@ void expandLine(char **line, int size)
         *line = temp;
     }
 }
-void expandInput(char ***text, int size)
+void expandText(char ***text, int size)
 {
     char **temp = (char **)realloc(*text, sizeof(char *) * (size + 1));
     if (temp == NULL)
     {
-        printf("Failed to allocate memory\n");
-        free(temp);
-        temp = 0;
-        free(*text);
-        text = 0;
-        exit(1);
+        failureFree((void *)*text, temp);
     }
     else
     {
         *text = temp;
     }
 }
-void expandWords(char ***words, int size)
-{
-    char **temp = (char **)realloc(*words, sizeof(char *) * (size + 1));
-    if (temp == NULL)
-    {
-        printf("Failed to allocate memory\n");
-        free(temp);
-        temp = 0;
-        free(words);
-        words = 0;
-        exit(1);
-    }
-    else
-    {
-        *words = temp;
-    }
-}
-
 char *getLine()
 {
     char *line = NULL;
@@ -66,7 +47,7 @@ char *getLine()
         line[len] = (char)c;
         len++;
     }
-    if (c != EOF || line != NULL)
+    if (line != NULL)
     {
         expandLine(&line, len);
         line[len] = '\0';
@@ -81,7 +62,7 @@ char **getWholeText(int *lines)
     char *s;
     while ((s = getLine()))
     {
-        expandInput(&input, no_of_lines);
+        expandText(&input, no_of_lines);
         input[no_of_lines] = s;
         no_of_lines++;
     }
@@ -91,13 +72,17 @@ char **getWholeText(int *lines)
 char ***parseWords(char **text, int no_of_lines, int *word_count)
 {
     char ***words = malloc(sizeof(char **) * no_of_lines);
+    if (words == NULL)
+    {
+        return words;
+    }
     for (size_t i = 0; i < no_of_lines; i++)
     {
         words[i] = (char **)malloc(sizeof(char **));
         char *temp = strdup(text[i]);
         for (char *s = strtok(temp, " "); s != NULL; s = strtok(NULL, " "))
         {
-            expandWords(&words[i], word_count[i]);
+            expandText(&words[i], word_count[i]);
             words[i][word_count[i]] = strdup(s);
             word_count[i]++;
         }
@@ -113,13 +98,9 @@ void printReversedWords(char ***words, int *word_count, int no_of_lines)
         for (int j = word_count[i] - 1; j >= 0; j--)
         {
             printf("%s", words[i][j]);
-            switch (j)
+            if (j > 0)
             {
-            case 0:
-                break;
-            default:
                 printf(" ");
-                break;
             }
         }
         printf("\n");
@@ -154,12 +135,29 @@ int main(int argc, char const *argv[])
 {
     int no_of_lines;
     char **text = getWholeText(&no_of_lines);
+    if (text == NULL)
+    {
+        goto text_err;
+    }
     int *word_count = calloc(no_of_lines, sizeof(int));
+    if (word_count == NULL)
+    {
+        goto word_count_err;
+    }
     char ***words = parseWords(text, no_of_lines, word_count);
+    if (words == NULL)
+    {
+        goto words_err;
+    }
     printReversedWords(words, word_count, no_of_lines);
+
+words_err:
     freeWords(words, word_count, no_of_lines);
-    freeText(text, no_of_lines);
+word_count_err:
     free(word_count);
+text_err:
+    freeText(text, no_of_lines);
+
     word_count = 0;
 
     return 0;
