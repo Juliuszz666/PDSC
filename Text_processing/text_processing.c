@@ -16,6 +16,7 @@ void expandLine(char **line, int size)
     }
     else
     {
+        temp[size] = '\0';
         *line = temp;
     }
 }
@@ -65,7 +66,7 @@ char *getLine()
         line[len] = (char)c;
         len++;
     }
-    if (c != EOF)
+    if (c != EOF || line != NULL)
     {
         expandLine(&line, len);
         line[len] = '\0';
@@ -92,8 +93,8 @@ char ***parseWords(char **text, int no_of_lines, int *word_count)
     char ***words = malloc(sizeof(char **) * no_of_lines);
     for (size_t i = 0; i < no_of_lines; i++)
     {
-        words[i] = (char**)malloc(sizeof(char **));
-        char* temp = strdup(text[i]);
+        words[i] = (char **)malloc(sizeof(char **));
+        char *temp = strdup(text[i]);
         for (char *s = strtok(temp, " "); s != NULL; s = strtok(NULL, " "))
         {
             expandWords(&words[i], word_count[i]);
