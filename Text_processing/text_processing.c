@@ -2,6 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+void printReversedWords(char ***words, int *word_count, int no_of_lines)
+{
+    for (int i = no_of_lines - 1; i >= 0; i--)
+    {
+        for (int j = word_count[i] - 1; j >= 0; j--)
+        {
+            printf("%s", words[i][j]);
+            if (j > 0)
+            {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
+}
 void failureFree(void *main, void *temp)
 {
     printf("Failed to allocate memory\n");
@@ -47,7 +62,7 @@ char *getLine()
         line[len] = (char)c;
         len++;
     }
-    if (line != NULL)
+    if (line != NULL || c != EOF)
     {
         expandLine(&line, len);
         line[len] = '\0';
@@ -90,21 +105,6 @@ char ***parseWords(char **text, int no_of_lines, int *word_count)
         temp = 0;
     }
     return words;
-}
-void printReversedWords(char ***words, int *word_count, int no_of_lines)
-{
-    for (int i = no_of_lines - 1; i >= 0; i--)
-    {
-        for (int j = word_count[i] - 1; j >= 0; j--)
-        {
-            printf("%s", words[i][j]);
-            if (j > 0)
-            {
-                printf(" ");
-            }
-        }
-        printf("\n");
-    }
 }
 void freeWords(char ***words, int *word_count, int no_of_lines)
 {
