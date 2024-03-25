@@ -141,6 +141,7 @@ void freeText(char **text, int no_of_lines)
 }
 int main(int argc, char const *argv[])
 {
+    printf("Test test test\n");
     int no_of_lines;
     char **text = getWholeText(&no_of_lines);
     if (text == NULL)
