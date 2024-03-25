@@ -94,6 +94,14 @@ char ***parseWords(char **text, int no_of_lines, int *word_count)
     for (size_t i = 0; i < no_of_lines; i++)
     {
         words[i] = (char **)malloc(sizeof(char **));
+        if (words[i] == NULL)
+        {
+            return NULL;
+        }
+    }
+
+    for (size_t i = 0; i < no_of_lines; i++)
+    {
         char *temp = strdup(text[i]);
         for (char *s = strtok(temp, " "); s != NULL; s = strtok(NULL, " "))
         {
