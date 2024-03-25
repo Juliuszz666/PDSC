@@ -486,26 +486,11 @@ bool checkMoveCollision(piece_struct *piece, point dir_vector)
     updatePiece(&test);
 
     return checkCollision(&test);
-
-    if (checkCollision(&test))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 bool checkRotCollision(piece_struct *piece)
 {
     piece_struct test = *piece;
     rotatePiece(&test);
-    if (checkCollision(&test))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+
+    return checkCollision(&test);
 }
