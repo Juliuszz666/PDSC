@@ -78,7 +78,6 @@ char **getWholeText(int *lines)
 }
 void parseWords(char **text, int no_of_lines)
 {
-
     for (size_t i = 0; i < no_of_lines; i++)
     {
         int word_count = 0;
@@ -91,32 +90,25 @@ void parseWords(char **text, int no_of_lines)
             words[word_count] = strdup(s);
             word_count++;
         }
-        char *buffer_string = words[word_count-1];
-        for (size_t j = word_count - 2; j >= 0; j--)
+
+        char *buffer_string = malloc(strlen(text[i]) + 1);
+        buffer_string[0] = '\0';
+
+        for (int j = word_count - 1; j >= 0; j--)
         {
             strcat(buffer_string, words[j]);
             if (j > 0)
             {
                 strcat(buffer_string, " ");
             }
+            free(words[j]);
         }
-        strcpy(text[i], buffer_string);
+
+        free(words);
+        words = 0;
+        free(text[i]);
+        text[i] = buffer_string;
     }
-}
-void freeWords(char ***words, int *word_count, int no_of_lines)
-{
-    for (size_t i = 0; i < no_of_lines; i++)
-    {
-        for (size_t j = 0; j < word_count[i]; j++)
-        {
-            free(words[i][j]);
-            words[i][j] = 0;
-        }
-        free(words[i]);
-        words[i] = 0;
-    }
-    free(words);
-    words = 0;
 }
 void freeText(char **text, int no_of_lines)
 {
