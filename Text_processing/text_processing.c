@@ -59,6 +59,7 @@ char *getLine()
         if (errno == ENOMEM)
         {
             free(line);
+            line = 0;
             return NULL;
         }
 
@@ -71,6 +72,7 @@ char *getLine()
         if (errno == ENOMEM)
         {
             free(line);
+            line = 0;
             return NULL;
         }
 

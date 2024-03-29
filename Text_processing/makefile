@@ -14,7 +14,7 @@ random:
 	gcc -fsanitize=undefined -g -Wall -pedantic $(sources_random) -o $(executable)
 .PHONY: clean
 clean:
-	-rm text_processing.o text
+	-rm text_processing.o text valgrind.txt
 .PHONY: test
 test:
 	bash test_text.sh
