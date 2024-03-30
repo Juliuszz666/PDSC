@@ -1,10 +1,20 @@
-all: text
+headers = rand_malloc.h
 
-text: text_processing.o
-	gcc -fsanitize=undefined -g -Wall -pedantic text_processing.o -o text
+sources_normal = text_processing.c
 
-text_processing.o: text_processing.c
-	gcc -fsanitize=undefined -g -c -Wall -pedantic text_processing.c -o text_processing.o
+sources_random = text_rand.c rand_malloc.c
 
+executable = text
+
+.PHONY: normal
+normal:
+	gcc -fsanitize=undefined -g -Wall -pedantic $(sources_normal) -o $(executable)
+.PHONY: random
+random:
+	gcc -fsanitize=undefined -g -Wall -pedantic $(sources_random) -o $(executable)
+.PHONY: clean
 clean:
-	-rm text_processing.o text 
+	-rm text_processing.o text valgrind.txt
+.PHONY: test
+test:
+	bash test_text.sh
