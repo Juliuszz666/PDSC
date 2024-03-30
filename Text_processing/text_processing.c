@@ -7,13 +7,13 @@ void freeText(char **text, int no_of_lines, int start)
 {
     for (size_t i = start; i < no_of_lines; i++)
     {
-        free(text[i]);
-        text[i] = 0;
+        if (text[i] != 0) {
+            free(text[i]);
+            text[i] = 0;
+        }
     }
     free(text);
-    text = 0;
 }
-
 void printReversedWords(char **text, int no_of_lines)
 {
     for (int i = no_of_lines - 1; i >= 0; i--)
@@ -21,7 +21,6 @@ void printReversedWords(char **text, int no_of_lines)
         printf("%s\n", text[i]);
     }
 }
-
 void expandLine(char **line, int size)
 {
     char *temp = (char *)realloc(*line, sizeof(char) * (size + 1));
@@ -33,18 +32,6 @@ void expandLine(char **line, int size)
     {
         temp[size] = '\0';
         *line = temp;
-    }
-}
-void expandText(char ***text, int size)
-{
-    char **temp = (char **)realloc(*text, sizeof(char *) * (size + 1));
-    if (temp == NULL)
-    {
-        errno = ENOMEM;
-    }
-    else
-    {
-        *text = temp;
     }
 }
 char *getLine()
@@ -80,6 +67,18 @@ char *getLine()
     }
 
     return line;
+}
+void expandText(char ***text, int size)
+{
+    char **temp = (char **)realloc(*text, sizeof(char *) * (size + 1));
+    if (temp == NULL)
+    {
+        errno = ENOMEM;
+    }
+    else
+    {
+        *text = temp;
+    }
 }
 char **getWholeText(int *lines)
 {
@@ -156,25 +155,27 @@ void reverseWords(char **text, int no_of_lines)
         if (errno == ENOMEM)
         {
             free(temp);
-            temp = 0;
-            freeText(words, word_count, i);
+            temp = NULL;
+            freeText(words, word_count, 0);
             break;
         }
         free(temp);
-        temp = 0;
+        temp = NULL;
         char *buffer_string = concatenateWords(words, word_count, strlen(text[i]));
         free(text[i]);
-        text[i] = NULL;
         free(words);
         words = 0;
-        if (errno == ENOMEM)
+        if (buffer_string == NULL)
         {
             freeText(text, no_of_lines, i);
             break;
         }
         text[i] = buffer_string;
+        free(buffer_string);
+        buffer_string = 0;
     }
 }
+
 int main(int argc, char const *argv[])
 {
     errno = 0;
