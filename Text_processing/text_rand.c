@@ -4,11 +4,39 @@
 #include <string.h>
 #include "rand_malloc.h"
 
+void freeText(char **, int, int);
+void printReversedWords(char **, int);
+void reverseWords(char **, int);
+void expandLine(char **, int);
+void expandText(char ***, int);
+char *concatenateWords(char **, int, int);
+char *getLine(void);
+char **getWholeText(int *);
+
+int main(int argc, char const *argv[])
+{
+    errno = 0;
+    int no_of_lines;
+    char **text = getWholeText(&no_of_lines);
+    if (text == NULL)
+    {
+        exit(1);
+    }
+    reverseWords(text, no_of_lines);
+    if (!errno)
+    {
+        printReversedWords(text, no_of_lines);
+        freeText(text, no_of_lines, 0);
+    }
+
+    return 0;
+}
 void freeText(char **text, int no_of_lines, int start)
 {
     for (size_t i = start; i < no_of_lines; i++)
     {
-        if (text[i] != 0) {
+        if (text[i] != 0)
+        {
             free(text[i]);
             text[i] = 0;
         }
@@ -122,7 +150,7 @@ char **tokenize(char *line, int *word_count)
 char *concatenateWords(char **words, int word_count, int word_length)
 {
     errno = 0;
-    char *buffer_string = malloc(word_length + 1);
+    char *buffer_string = malloc((word_length + 1)*sizeof(char));
     if (buffer_string == NULL)
     {
         errno = ENOMEM;
@@ -136,7 +164,6 @@ char *concatenateWords(char **words, int word_count, int word_length)
         {
             strcat(buffer_string, " ");
         }
-        free(words[j]);
     }
     return buffer_string;
 }
@@ -163,8 +190,8 @@ void reverseWords(char **text, int no_of_lines)
         free(temp);
         temp = NULL;
         char *buffer_string = concatenateWords(words, word_count, strlen(text[i]));
+        freeText(words, word_count, 0);
         free(text[i]);
-        free(words);
         words = 0;
         if (buffer_string == NULL)
         {
@@ -173,23 +200,4 @@ void reverseWords(char **text, int no_of_lines)
         }
         text[i] = buffer_string;
     }
-}
-
-int main(int argc, char const *argv[])
-{
-    errno = 0;
-    int no_of_lines;
-    char **text = getWholeText(&no_of_lines);
-    if (text == NULL)
-    {
-        exit(1);
-    }
-    reverseWords(text, no_of_lines);
-    if (!errno)
-    {
-        printReversedWords(text, no_of_lines);
-        freeText(text, no_of_lines, 0);
-    }
-
-    return 0;
 }
