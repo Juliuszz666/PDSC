@@ -1,10 +1,14 @@
 all: main
 
-exe = main
-sources = main.c list.c
-headers = list.h
+main: main.o list.o
+	gcc -fsanitize=undefined -g $^ -o $@ -lm
 
-main: 
-	gcc -fsanitize=undefined -g -Wall -pedantic -lm $(sources) -o $(exe)
+.c.o: 
+	gcc -fsanitize=undefined -g -Wall -pedantic -c  $<
+
+list.o: list.c list.h
+
+main.o: main.c list.h
+
 clean:
-	-rm main
+	-rm main.o list.o main

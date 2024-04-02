@@ -43,7 +43,7 @@ typedef struct list
 } node;
 
 node *createNode(IBAN, name, location, PESEL, double, double, double);
-void pushNode(node);
+void pushNode(node **, node *);
 void removeNode();
 void printList();
 

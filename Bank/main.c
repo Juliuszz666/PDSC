@@ -7,17 +7,47 @@
 #define COUNTRY "PL69"
 #define BANK_CODE "211569420"
 
+void chooseAction();
+void chooseModifyingOperation();
+void chooseDisplayOperation();
 void generateIBAN(IBAN, node *);
-bool isIBANoverlapping();
+bool isIBANoverlapping(node *, IBAN);
 
 int main(int argc, char const *argv[])
 {
-    IBAN test;
-    generateIBAN(test, NULL);
-    printf("%s\n", test);
+    node *head = NULL;
+    while (1)
+    {
+        chooseAction();
+        break;
+    }
+
     return 0;
 }
 
+void chooseAction()
+{
+    printf("***\t\t\tChoose want you want to do\t\t\t***\n");
+    printf("***\t\t\t1.\tModify something\t\t\t***\n");
+    printf("***\t\t\t2.\tSee something\t\t\t\t***\n");
+    int key = getchar();
+    switch (key)
+    {
+    case '1':
+        chooseModifyingOperation();
+        break;
+    
+    case '2':
+        chooseDisplayOperation();
+        break;
+    default:
+        break;
+    }
+}
+void chooseModifyingOperation()
+{
+    void (*functionPointer)(void);
+}
 void generateIBAN(IBAN to_be_generated, node *head)
 {
     do
@@ -40,13 +70,13 @@ void generateIBAN(IBAN to_be_generated, node *head)
 bool isIBANoverlapping(node *head, IBAN check_val)
 {
     node *temp = head;
-    while (temp!=NULL)
+    while (temp != NULL)
     {
-        if (temp->account_number==check_val)
+        if (temp->account_number == check_val)
         {
             return true;
         }
-        temp = temp->next;        
+        temp = temp->next;
     }
-    return false;    
+    return false;
 }

@@ -22,4 +22,13 @@ node *createNode(IBAN iban, name input_name, location input_address, PESEL input
 
     return new_node;
 }
-
+void pushNode(node **cur_head, node *new_head)
+{
+    new_head->prev = NULL;
+    new_head->next = (*cur_head);
+    if ((*cur_head) != NULL)
+    {
+        (*cur_head)->prev = new_head;
+    }
+    (*cur_head) = new_head;
+}

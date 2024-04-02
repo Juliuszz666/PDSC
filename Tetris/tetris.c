@@ -20,8 +20,8 @@
 #define ROW_FLAG 1
 #define COL_FLAG 2
 #define BUFFER_SIZE 100
-#define BASE_DELAY 250
-#define KEY_DELAY 10
+#define BASE_DELAY 300
+#define KEY_DELAY 7
 #define NEXT_X_CO (GRID_WITDH * 1.5)
 #define NEXT_Y_CO (GRID_HEIGHT / 2)
 #define PIECE_KIND_NO 7
@@ -71,9 +71,10 @@ piece_struct initializeNext();
 int fallPiece(piece_struct *falling_piece);
 int findPieceBound(piece_struct *piece, short flag);
 int rowToDelete();
-bool checkRotCollision(piece_struct *piece);
+void tryRotatePiece(piece_struct *piece);
 bool checkMoveCollision(piece_struct *piece, point div_vector);
 bool checkCollision(piece_struct *piece);
+bool isSquareColliding(int posx, int posy, piece_struct *test);
 bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
 bool isGameOver();
 bool isRowFull(int index);
@@ -94,6 +95,9 @@ void dumpPiece(piece_struct *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
 void gameOverMenu();
+void renderGame();
+void rowHandler(int *score);
+void gameLoop(piece_struct *current_piece, piece_struct *next_piece, int *score);
 
 int main(int argc, char *argv[])
 {
@@ -104,36 +108,48 @@ int main(int argc, char *argv[])
     welcomeMenu();
     initializeGrid();
     int score = 0;
+    piece_struct first_piece = initializeNext();
+    piece_struct current_piece = initializePiece(first_piece);
     piece_struct next_piece = initializeNext();
-    piece_struct current_piece = initializePiece(next_piece);
-    next_piece = initializeNext();
+    gameLoop(&current_piece, &next_piece, &score);
+    gameOverMenu(score);
+    return 0;
+}
+void gameLoop(piece_struct *current_piece, piece_struct *next_piece, int *score)
+{
     while (1)
     {
-        drawGrid();
-        drawPiece(&current_piece);
-        drawPiece(&next_piece);
-        drawBoard();
-        gfx_updateScreen();
-        if (fallPiece(&current_piece))
+        renderGame(current_piece, next_piece);
+        if (fallPiece(current_piece))
         {
-            dumpPiece(&current_piece, &score);
+            dumpPiece(current_piece, score);
             if (isGameOver())
             {
                 break;
             }
-            current_piece = initializePiece(next_piece);
-            next_piece = initializeNext();
+            *current_piece = initializePiece(*next_piece);
+            *next_piece = initializeNext();
         }
-        int row_to_delete = rowToDelete();
-        if (row_to_delete >= 0)
-        {
-            removeRow(row_to_delete, &score);
-        }
-        handleKeys(&current_piece);
+        rowHandler(score);
+        handleKeys(current_piece);
         SDL_Delay(BASE_DELAY);
     }
-    gameOverMenu(score);
-    return 0;
+}
+void rowHandler(int *score)
+{
+    int row_to_delete = rowToDelete();
+    if (row_to_delete >= 0)
+    {
+        removeRow(row_to_delete, score);
+    }
+}
+void renderGame(piece_struct *current_piece, piece_struct *next_piece)
+{
+    drawGrid();
+    drawPiece(current_piece);
+    drawPiece(next_piece);
+    drawBoard();
+    gfx_updateScreen();
 }
 piece_struct initializePiece(piece_struct next)
 {
@@ -289,16 +305,24 @@ bool checkCollision(piece_struct *test)
     {
         for (int j = 0; j < row_no; j++)
         {
-            if (test->piece_layout[i][j].rect_color != BLACK)
+            if (isSquareColliding(i, j, test))
             {
-                if (grid[test->piece_position.x + i][test->piece_position.y + j].rect_color == RED)
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }
     return true;
+}
+bool isSquareColliding(int posx, int posy, piece_struct *test)
+{
+    if (test->piece_layout[posx][posy].rect_color != BLACK)
+    {
+        if (grid[test->piece_position.x + posx][test->piece_position.y + posy].rect_color == RED)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 void updatePiece(piece_struct *piece)
 {
@@ -368,10 +392,7 @@ void handleKeys(piece_struct *piece)
             exit(0);
             break;
         case SDLK_SPACE:
-            if (checkRotCollision(piece))
-            {
-                rotatePiece(piece);
-            }
+            tryRotatePiece(piece);
             break;
         case SDLK_RIGHT:
             movePiece(dir[MV_RIGHT], piece);
@@ -487,10 +508,13 @@ bool checkMoveCollision(piece_struct *piece, point dir_vector)
 
     return checkCollision(&test);
 }
-bool checkRotCollision(piece_struct *piece)
+void tryRotatePiece(piece_struct *piece)
 {
     piece_struct test = *piece;
     rotatePiece(&test);
 
-    return checkCollision(&test);
+    if (checkCollision(&test))
+    {
+        rotatePiece(piece);
+    }
 }
