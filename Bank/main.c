@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "list.h"
+#include "prints.h"
 
 #define COUNTRY "PL69"
 #define BANK_CODE "211569420"
@@ -12,10 +13,19 @@ void chooseModifyingOperation();
 void chooseDisplayOperation();
 void generateIBAN(IBAN, node *);
 bool isIBANoverlapping(node *, IBAN);
+bool confimationOfAction(int);
+
+void createAccount();
+void makeDeposit();
+void makeWithdrawal();
+void transferMoney();
+void takeLoan();
+void payDebt();
+
+node *head = NULL;
 
 int main(int argc, char const *argv[])
 {
-    node *head = NULL;
     while (1)
     {
         chooseAction();
@@ -24,19 +34,17 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
 void chooseAction()
 {
-    printf("***\t\t\tChoose want you want to do\t\t\t***\n");
-    printf("***\t\t\t1.\tModify something\t\t\t***\n");
-    printf("***\t\t\t2.\tSee something\t\t\t\t***\n");
+    printActions();
     int key = getchar();
+    getchar();
     switch (key)
     {
     case '1':
         chooseModifyingOperation();
         break;
-    
+
     case '2':
         chooseDisplayOperation();
         break;
@@ -44,9 +52,85 @@ void chooseAction()
         break;
     }
 }
+
 void chooseModifyingOperation()
 {
     void (*functionPointer)(void);
+    printModifyingOptions();
+    int key = getchar();
+    getchar();
+
+    switch (key)
+    {
+    case '1':
+        functionPointer = &createAccount;
+        break;
+    case '2':
+        functionPointer = &makeDeposit;
+        break;
+    case '3':
+        functionPointer = &makeWithdrawal;
+        break;
+    case '4':
+        functionPointer = &transferMoney;
+        break;
+    case '5':
+        functionPointer = &takeLoan;
+        break;
+    case '6':
+        functionPointer = &payDebt;
+        break;
+    default:
+        printf("Invalid operation\n");
+        break;
+    }
+    if (confimationOfAction(key - '0') && key != -1)
+    {
+        (*functionPointer)();
+    }
+}
+bool confimationOfAction(int action_no)
+{
+    system("clear");
+    printf("Do you want to performs this action number %d?\nPress Y/y if yes, otherwise press "
+           "anything else\n",
+           action_no);
+    int action = getchar();
+    getchar();
+    return (action == 'y' || action == 'Y');
+}
+void createAccount()
+{
+    IBAN acc_num;
+    generateIBAN(acc_num, head);
+    inputCredentials();
+    node *newAccount = createNode();
+    pushNode(&head, newAccount);
+    saveData();
+}
+void makeDeposit()
+{
+    printf("GIIT33\n");
+}
+void makeWithdrawal()
+{
+    printf("GIIT\n");
+}
+void transferMoney()
+{
+    printf("GIIT\n");
+}
+void takeLoan()
+{
+    printf("GIIT\n");
+}
+void payDebt()
+{
+    printf("GIIT\n");
+}
+void chooseDisplayOperation()
+{
+    printDisplayOptions();
 }
 void generateIBAN(IBAN to_be_generated, node *head)
 {
