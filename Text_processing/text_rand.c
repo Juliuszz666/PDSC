@@ -1,8 +1,8 @@
+#include "rand_malloc.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "rand_malloc.h"
 
 void freeText(char **, int, int);
 void printReversedWords(char **, int);
@@ -12,6 +12,19 @@ void expandText(char ***, int);
 char *concatenateWords(char **, int, int);
 char *getLine(void);
 char **getWholeText(int *);
+
+char *strdup(const char *s)
+{
+    char *p = 0;
+    p = malloc(strlen(s) + 1);
+    if (p == NULL)
+    {
+        errno = ENOMEM;
+    }
+    if (p)
+        strcpy(p, s);
+    return p;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -26,8 +39,8 @@ int main(int argc, char const *argv[])
     if (!errno)
     {
         printReversedWords(text, no_of_lines);
-        freeText(text, no_of_lines, 0);
     }
+    freeText(text, no_of_lines, 0);
 
     return 0;
 }
@@ -35,7 +48,7 @@ void freeText(char **text, int no_of_lines, int start)
 {
     for (size_t i = start; i < no_of_lines; i++)
     {
-        if (text[i] != 0)
+        if (text[i] != NULL)
         {
             free(text[i]);
             text[i] = 0;
@@ -143,6 +156,11 @@ char **tokenize(char *line, int *word_count)
             return NULL;
         }
         words[*word_count] = strdup(s);
+        if (errno == ENOMEM)
+        {
+            freeText(words, *word_count, 0);
+            return NULL;
+        }
         (*word_count)++;
     }
     return words;
@@ -150,7 +168,7 @@ char **tokenize(char *line, int *word_count)
 char *concatenateWords(char **words, int word_count, int word_length)
 {
     errno = 0;
-    char *buffer_string = malloc((word_length + 1)*sizeof(char));
+    char *buffer_string = malloc(word_length + 1);
     if (buffer_string == NULL)
     {
         errno = ENOMEM;
@@ -164,6 +182,8 @@ char *concatenateWords(char **words, int word_count, int word_length)
         {
             strcat(buffer_string, " ");
         }
+        free(words[j]);
+        words[j] = 0;
     }
     return buffer_string;
 }
@@ -174,7 +194,7 @@ void reverseWords(char **text, int no_of_lines)
     {
         int word_count = 0;
         char *temp = strdup(text[i]);
-        if (temp == NULL && strlen(text[i]) > 0)
+        if (temp == NULL && text[i][0] != '\0')
         {
             errno = ENOMEM;
             break;
@@ -184,20 +204,20 @@ void reverseWords(char **text, int no_of_lines)
         {
             free(temp);
             temp = NULL;
-            freeText(words, word_count, 0);
+            break;
+        }
+        char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
+        free(words);
+        words = 0;
+        if (errno == ENOMEM)
+        {
+            free(temp);
+            temp = NULL;
             break;
         }
         free(temp);
         temp = NULL;
-        char *buffer_string = concatenateWords(words, word_count, strlen(text[i]));
-        freeText(words, word_count, 0);
         free(text[i]);
-        words = 0;
-        if (buffer_string == NULL)
-        {
-            freeText(text, no_of_lines, i);
-            break;
-        }
         text[i] = buffer_string;
     }
 }
