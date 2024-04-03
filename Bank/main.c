@@ -8,12 +8,17 @@
 #define COUNTRY "PL69"
 #define BANK_CODE "211569420"
 
+#define BALANCE_INFO_NO 3
+
 void chooseAction();
 void chooseModifyingOperation();
 void chooseDisplayOperation();
 void generateIBAN(IBAN, node *);
 bool isIBANoverlapping(node *, IBAN);
 bool confimationOfAction(int);
+
+name getName();
+location getLocation();
 
 void createAccount();
 void makeDeposit();
@@ -103,10 +108,23 @@ void createAccount()
 {
     IBAN acc_num;
     generateIBAN(acc_num, head);
-    inputCredentials();
-    node *newAccount = createNode();
+    name acc_name = getName();
+    location address = getLocation();
+    PESEL id_number = getPESEL();
+    double balance_info[BALANCE_INFO_NO];
+    getBalanceInfo(balance_info);
+    node *newAccount = createNode(acc_num, acc_name, address, id_number, balance_info[0],
+                                  balance_info[1], balance_info[2]);
     pushNode(&head, newAccount);
     saveData();
+}
+name getName()
+{
+
+}
+location getLocation()
+{
+
 }
 void makeDeposit()
 {
