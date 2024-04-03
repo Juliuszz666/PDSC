@@ -205,13 +205,7 @@ void reverseWords(char **text, int no_of_lines)
             break;
         }
         char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
-        for (size_t i = 0; i < word_count; i++)
-        {
-            free(words[i]);
-            words[i] = 0;
-        }
-        free(words);
-        words = 0;
+        freeText(words, word_count);
         if (errno == ENOMEM)
         {
             free(temp);

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void freeText(char **, int, int);
+void freeText(char **, int);
 void printReversedWords(char **, int);
 void reverseWords(char **, int);
 void expandLine(char **, int);
@@ -39,13 +39,13 @@ int main(int argc, char const *argv[])
     {
         printReversedWords(text, no_of_lines);
     }
-    freeText(text, no_of_lines, 0);
+    freeText(text, no_of_lines);
 
     return 0;
 }
-void freeText(char **text, int no_of_lines, int start)
+void freeText(char **text, int no_of_lines)
 {
-    for (size_t i = start; i < no_of_lines; i++)
+    for (size_t i = 0; i < no_of_lines; i++)
     {
         if (text[i] != NULL)
         {
@@ -133,7 +133,7 @@ char **getWholeText(int *lines)
         {
             free(s);
             s = 0;
-            freeText(input, no_of_lines, 0);
+            freeText(input, no_of_lines);
             return NULL;
         }
         input[no_of_lines] = s;
@@ -151,13 +151,13 @@ char **tokenize(char *line, int *word_count)
         expandText(&words, *word_count);
         if (errno == ENOMEM)
         {
-            freeText(words, *word_count, 0);
+            freeText(words, *word_count);
             return NULL;
         }
         words[*word_count] = strdup(s);
         if (errno == ENOMEM)
         {
-            freeText(words, *word_count, 0);
+            freeText(words, *word_count);
             return NULL;
         }
         (*word_count)++;
@@ -204,12 +204,7 @@ void reverseWords(char **text, int no_of_lines)
             break;
         }
         char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
-        for (size_t i = 0; i < word_count; i++)
-        {
-            free(words[i]);
-            words[i] = 0;
-        }
-        free(words);
+        freeText(words, word_count);
         words = 0;
         if (errno == ENOMEM)
         {
