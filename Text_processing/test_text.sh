@@ -4,6 +4,9 @@ while [ $i -le $runs ]
 do
     valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./text <lorem.txt >> valgrind.txt 2>&1
     i=$((i+1))
+	clear
+	echo $i
+	
 done
 phrase_1="0 errors from 0 contexts"
 phrase_2="no leaks are possible"

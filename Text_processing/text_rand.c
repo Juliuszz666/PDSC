@@ -15,7 +15,7 @@ char **getWholeText(int *);
 
 char *strdup(const char *s)
 {
-    char *p = 0;
+    char *p = NULL;
     p = malloc(strlen(s) + 1);
     if (p == NULL)
     {
