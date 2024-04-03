@@ -46,54 +46,54 @@ typedef enum
     UP,
     RIGHT,
     DOWN
-} rotation_enum;
+} rotation;
 
 typedef enum
 {
     MV_RIGHT,
     MV_DOWN,
     MV_LEFT
-} dir_enum;
+} direction;
 
 typedef struct
 {
     rect piece_layout[PIECE_SIZE][PIECE_SIZE];
-    rotation_enum rot_state;
+    rotation rot_state;
     point piece_position;
     short piece_type;
-} piece_struct;
+} piece_template;
 
 rect grid[GRID_WITDH][GRID_HEIGHT] = {0};
 const point dir[3] = {{1, 0}, {0, 1}, {-1, 0}};
 
-piece_struct initializePiece(piece_struct next);
-piece_struct initializeNext();
-int fallPiece(piece_struct *falling_piece);
-int findPieceBound(piece_struct *piece, short flag);
+piece_template initializePiece(piece_template next);
+piece_template initializeNext();
+int fallPiece(piece_template *falling_piece);
+int findPieceBound(piece_template *piece, short flag);
 int rowToDelete();
-bool checkRotCollision(piece_struct *piece);
-bool checkMoveCollision(piece_struct *piece, point div_vector);
-bool checkCollision(piece_struct *piece);
-bool isRowColumnEmpty(int flag, int index, piece_struct *piece);
+bool checkRotCollision(piece_template *piece);
+bool checkMoveCollision(piece_template *piece, point div_vector);
+bool checkCollision(piece_template *piece);
+bool isRowColumnEmpty(int flag, int index, piece_template *piece);
 bool isGameOver();
 bool isRowFull(int index);
 void drawBoard();
 void removeRow(int row_to_delete, int *score);
-void updatePiecePos(piece_struct *piece);
-void movePiece(point dir, piece_struct *piece);
-void rotatePiece(piece_struct *piece);
-void updatePiece(piece_struct *piece);
-void handleKeys(piece_struct *piece);
+void updatePiecePos(piece_template *piece);
+void movePiece(point dir, piece_template *piece);
+void rotatePiece(piece_template *piece);
+void updatePiece(piece_template *piece);
+void handleKeys(piece_template *piece);
 void drawRect(rect piece_rect);
-void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord);
+void updateRectPos(piece_template *piece_ptr, int x_cord, int y_cord);
 void welcomeMenu();
-void drawPiece(piece_struct *piece);
-void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color);
-void fastFall(piece_struct *piece);
-void dumpPiece(piece_struct *dumped_piece, int *score);
+void drawPiece(piece_template *piece);
+void updateRectColor(piece_template *piece_ptr, int x_cord, int y_cord, char piece_color);
+void fastFall(piece_template *piece);
+void dumpPiece(piece_template *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
-void gameOverMenu();
+void gameOverMenu(int score);
 
 int main(int argc, char *argv[])
 {
@@ -104,8 +104,8 @@ int main(int argc, char *argv[])
     welcomeMenu();
     initializeGrid();
     int score = 0;
-    piece_struct next_piece = initializeNext();
-    piece_struct current_piece = initializePiece(next_piece);
+    piece_template next_piece = initializeNext();
+    piece_template current_piece = initializePiece(next_piece);
     next_piece = initializeNext();
     while (1)
     {
@@ -135,18 +135,18 @@ int main(int argc, char *argv[])
     gameOverMenu(score);
     return 0;
 }
-piece_struct initializePiece(piece_struct next)
+piece_template initializePiece(piece_template next)
 {
-    piece_struct init = next;
+    piece_template init = next;
     init.piece_position.x = GRID_WITDH / 2;
     init.piece_position.y = 0;
     updatePiece(&init);
 
     return init;
 }
-piece_struct initializeNext()
+piece_template initializeNext()
 {
-    piece_struct next;
+    piece_template next;
     next.piece_position.x = NEXT_X_CO;
     next.piece_position.y = NEXT_Y_CO;
     srand(time(NULL));
@@ -156,7 +156,7 @@ piece_struct initializeNext()
 
     return next;
 }
-void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece_color)
+void updateRectColor(piece_template *piece_ptr, int x_cord, int y_cord, char piece_color)
 {
     switch (piece_color)
     {
@@ -173,7 +173,7 @@ void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece
         break;
     }
 }
-int fallPiece(piece_struct *falling_piece)
+int fallPiece(piece_template *falling_piece)
 {
     if (checkMoveCollision(falling_piece, dir[MV_DOWN]))
     {
@@ -183,14 +183,14 @@ int fallPiece(piece_struct *falling_piece)
     }
     return 1;
 }
-void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
+void updateRectPos(piece_template *piece_ptr, int x_cord, int y_cord)
 {
     piece_ptr->piece_layout[x_cord][y_cord].left_upper.x = piece_ptr->piece_position.x + x_cord;
     piece_ptr->piece_layout[x_cord][y_cord].left_upper.y = piece_ptr->piece_position.y + y_cord;
     piece_ptr->piece_layout[x_cord][y_cord].right_down.x = piece_ptr->piece_position.x + x_cord + 1;
     piece_ptr->piece_layout[x_cord][y_cord].right_down.y = piece_ptr->piece_position.y + y_cord + 1;
 }
-void drawPiece(piece_struct *piece)
+void drawPiece(piece_template *piece)
 {
     for (int i = 0; i < PIECE_SIZE; i++)
     {
@@ -203,13 +203,13 @@ void drawPiece(piece_struct *piece)
         }
     }
 }
-void rotatePiece(piece_struct *piece)
+void rotatePiece(piece_template *piece)
 {
     piece->rot_state = (piece->rot_state + 1) % PIECE_ROT_NO;
     updatePiece(piece);
     SDL_Delay(KEY_DELAY);
 }
-int findPieceBound(piece_struct *piece, short flag)
+int findPieceBound(piece_template *piece, short flag)
 {
     int index = 0;
     while (index < PIECE_SIZE)
@@ -222,7 +222,7 @@ int findPieceBound(piece_struct *piece, short flag)
     }
     return PIECE_SIZE;
 }
-bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
+bool isRowColumnEmpty(int flag, int index, piece_template *piece)
 {
     for (int i = 0; i < PIECE_SIZE; i++)
     {
@@ -249,7 +249,7 @@ bool isRowColumnEmpty(int flag, int index, piece_struct *piece)
     }
     return true;
 }
-void fastFall(piece_struct *piece)
+void fastFall(piece_template *piece)
 {
     while (checkMoveCollision(piece, dir[MV_DOWN]))
     {
@@ -257,7 +257,7 @@ void fastFall(piece_struct *piece)
     }
     SDL_Delay(KEY_DELAY);
 }
-void dumpPiece(piece_struct *dumped, int *score)
+void dumpPiece(piece_template *dumped, int *score)
 {
     int col_no = findPieceBound(dumped, COL_FLAG);
     int row_no = findPieceBound(dumped, ROW_FLAG);
@@ -273,7 +273,7 @@ void dumpPiece(piece_struct *dumped, int *score)
     }
     *score += 1;
 }
-bool checkCollision(piece_struct *test)
+bool checkCollision(piece_template *test)
 {
     int col_no = findPieceBound(test, COL_FLAG);
     int row_no = findPieceBound(test, ROW_FLAG);
@@ -300,7 +300,7 @@ bool checkCollision(piece_struct *test)
     }
     return true;
 }
-void updatePiece(piece_struct *piece)
+void updatePiece(piece_template *piece)
 {
     for (int i = 0; i < PIECE_SIZE; i++)
     {
@@ -357,7 +357,7 @@ void drawBoard()
              SCREEN_HEIGTH - (GRID_HEIGHT * GRID_SQAURE_SIZE),
              (SCREEN_WIDTH / 2) + (GRID_WITDH / 2 * GRID_SQAURE_SIZE), SCREEN_HEIGTH, CYAN);
 }
-void handleKeys(piece_struct *piece)
+void handleKeys(piece_template *piece)
 {
     int key = gfx_pollkey();
     while (key != -1)
@@ -386,7 +386,7 @@ void handleKeys(piece_struct *piece)
         key = gfx_pollkey();
     }
 }
-void updatePiecePos(piece_struct *piece)
+void updatePiecePos(piece_template *piece)
 {
     for (int i = 0; i < PIECE_SIZE; i++)
     {
@@ -396,7 +396,7 @@ void updatePiecePos(piece_struct *piece)
         }
     }
 }
-void movePiece(point dir, piece_struct *piece)
+void movePiece(point dir, piece_template *piece)
 {
     if (checkMoveCollision(piece, dir))
     {
@@ -478,18 +478,18 @@ void gameOverMenu(int score)
         gfx_updateScreen();
     }
 }
-bool checkMoveCollision(piece_struct *piece, point dir_vector)
+bool checkMoveCollision(piece_template *piece, point dir_vector)
 {
-    piece_struct test = *piece;
+    piece_template test = *piece;
     test.piece_position.x += dir_vector.x;
     test.piece_position.y += dir_vector.y;
     updatePiece(&test);
 
     return checkCollision(&test);
 }
-bool checkRotCollision(piece_struct *piece)
+bool checkRotCollision(piece_template *piece)
 {
-    piece_struct test = *piece;
+    piece_template test = *piece;
     rotatePiece(&test);
 
     return checkCollision(&test);
