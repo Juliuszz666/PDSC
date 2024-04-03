@@ -12,6 +12,7 @@ phrase_1="0 errors from 0 contexts"
 phrase_2="no leaks are possible"
 file="valgrind.txt"
 if [[ -f "$file" ]]; then
+	clear
 	count_errs=$(grep -o -i "$phrase_1" "$file" | wc -l)
 	count_leak=$(grep -o -i "$phrase_2" "$file" | wc -l)
 	echo "$count_errs of $((runs+1)) without errors"
