@@ -93,7 +93,7 @@ void fastFall(piece_template *piece);
 void dumpPiece(piece_template *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
-void gameOverMenu();
+void gameOverMenu(int score);
 
 int main(int argc, char *argv[])
 {
