@@ -68,9 +68,9 @@ const point dir[3] = {{1, 0}, {0, 1}, {-1, 0}};
 
 piece_struct initializePiece(piece_struct next);
 piece_struct initializeNext();
-int fallPiece(piece_struct *falling_piece);
 int findPieceBound(piece_struct *piece, short flag);
 int rowToDelete();
+bool fallPiece(piece_struct *falling_piece);
 void tryRotatePiece(piece_struct *piece);
 bool checkMoveCollision(piece_struct *piece, point div_vector);
 bool checkCollision(piece_struct *piece);
@@ -189,15 +189,15 @@ void updateRectColor(piece_struct *piece_ptr, int x_cord, int y_cord, char piece
         break;
     }
 }
-int fallPiece(piece_struct *falling_piece)
+bool fallPiece(piece_struct *falling_piece)
 {
     if (checkMoveCollision(falling_piece, dir[MV_DOWN]))
     {
         falling_piece->piece_position.y += 1;
         updatePiecePos(falling_piece);
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 void updateRectPos(piece_struct *piece_ptr, int x_cord, int y_cord)
 {
