@@ -1,4 +1,4 @@
-runs=300
+runs=999
 i=0
 while [ $i -le $runs ]
 do
@@ -14,8 +14,8 @@ file="valgrind.txt"
 if [[ -f "$file" ]]; then
 	count_errs=$(grep -o -i "$phrase_1" "$file" | wc -l)
 	count_leak=$(grep -o -i "$phrase_2" "$file" | wc -l)
-	echo "$count_errs of $runs without errors"
-	echo "$count_leak of $runs without leaks"
+	echo "$count_errs of $((runs+1)) without errors"
+	echo "$count_leak of $((runs+1)) without leaks"
 else
 	echo "File does not exist"
 fi
