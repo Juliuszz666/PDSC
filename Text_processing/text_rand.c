@@ -9,6 +9,7 @@ void printReversedWords(char **, int);
 void reverseWords(char **, int);
 void expandLine(char **, int);
 void expandText(char ***, int);
+void freeString(char*);
 char *concatenateWords(char **, int, int);
 char *getLine(void);
 char **getWholeText(int *);
@@ -22,6 +23,7 @@ char *strdup(const char *s)
     if (p) strcpy(p, s);
     return p;
 }
+
 int main(int argc, char const *argv[])
 {
     errno = 0;
@@ -45,11 +47,15 @@ void freeText(char **text, int no_of_lines)
     {
         if (text[i] != NULL)
         {
-            free(text[i]);
-            text[i] = 0;
+            freeString(text[i]);
         }
     }
     free(text);
+}
+void freeString(char* string)
+{
+    free(string);
+    string = 0;
 }
 void printReversedWords(char **text, int no_of_lines)
 {
@@ -81,8 +87,7 @@ char *getLine()
         expandLine(&line, len);
         if (errno == ENOMEM)
         {
-            free(line);
-            line = 0;
+            freeString(line);
             return NULL;
         }
         line[len] = (char)c;
@@ -93,8 +98,7 @@ char *getLine()
         expandLine(&line, len);
         if (errno == ENOMEM)
         {
-            free(line);
-            line = 0;
+            freeString(line);
             return NULL;
         }
         line[len] = '\0';
@@ -123,8 +127,7 @@ char **getWholeText(int *lines)
         expandText(&input, no_of_lines);
         if (errno == ENOMEM)
         {
-            free(s);
-            s = 0;
+            freeString(s);
             freeText(input, no_of_lines);
             return NULL;
         }
@@ -184,16 +187,16 @@ void reverseWords(char **text, int no_of_lines)
         char **words = tokenize(temp, &word_count);
         if (errno == ENOMEM)
         {
-            free(temp);
-            temp = 0;
+            freeString(temp);
             break;
         }
         char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
         freeText(words, word_count);
-        free(temp);
-        temp = 0;
+        freeString(temp);
         if (errno == ENOMEM) break;
-        free(text[i]);
-        text[i] = buffer_string;
+        freeString(text[i]);
+        text[i] = strdup(buffer_string);
+        freeString(buffer_string);
+        if (errno == ENOMEM) break;
     }
 }
