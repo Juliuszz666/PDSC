@@ -1,0 +1,2 @@
+Very basic implementation of Tetris game.  
+In general game cannot be crashed, but rotating axis is made in easy way and there is some lagging in case of pressing keys (due to wrongly set delays, but there are no udefined behabiours and everything works)
