@@ -3,7 +3,7 @@
 #include <time.h>
 
 /** Rate of random error injection. Acceptable values: 0-100 */
-unsigned const ALLOCATION_ERROR_RATE = 2;
+unsigned const ALLOCATION_ERROR_RATE = 20;
 
 bool randomness_initialized = false;
 

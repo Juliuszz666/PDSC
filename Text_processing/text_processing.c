@@ -17,12 +17,8 @@ char *strdup(const char *s)
     errno = 0;
     char *p = 0;
     p = malloc(strlen(s) + 1);
-    if (!p)
-    {
-        errno = ENOMEM;
-    }
-    if (p)
-        strcpy(p, s);
+    if (!p) errno = ENOMEM;
+    if (p) strcpy(p, s);
     return p;
 }
 

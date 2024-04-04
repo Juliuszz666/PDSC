@@ -18,15 +18,10 @@ char *strdup(const char *s)
     errno = 0;
     char *p = 0;
     p = malloc(strlen(s) + 1);
-    if (!p)
-    {
-        errno = ENOMEM;
-    }
-    if (p)
-        strcpy(p, s);
+    if (!p) errno = ENOMEM;
+    if (p) strcpy(p, s);
     return p;
 }
-
 int main(int argc, char const *argv[])
 {
     errno = 0;
@@ -185,8 +180,7 @@ void reverseWords(char **text, int no_of_lines)
     {
         int word_count = 0;
         char *temp = strdup(text[i]);
-        if (errno == ENOMEM)
-            break;
+        if (errno == ENOMEM) break;
         char **words = tokenize(temp, &word_count);
         if (errno == ENOMEM)
         {
@@ -198,8 +192,7 @@ void reverseWords(char **text, int no_of_lines)
         freeText(words, word_count);
         free(temp);
         temp = 0;
-        if (errno == ENOMEM)
-            break;
+        if (errno == ENOMEM) break;
         free(text[i]);
         text[i] = buffer_string;
     }
