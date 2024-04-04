@@ -17,4 +17,5 @@ clean:
 	-rm text_processing.o text valgrind.txt
 .PHONY: test
 test:
+	-rm valgrind.txt
 	bash test_text.sh

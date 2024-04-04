@@ -1,4 +1,4 @@
-runs=999
+runs=499
 i=0
 while [ $i -le $runs ]
 do
