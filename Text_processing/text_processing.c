@@ -1,54 +1,79 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void printReversedWords(char ***words, int *word_count, int no_of_lines)
+void freeText(char **, int);
+void printReversedWords(char **, int);
+void reverseWords(char **, int);
+void expandLine(char **, int);
+void expandText(char ***, int);
+void freeString(char*);
+char *concatenateWords(char **, int, int);
+char *getLine(void);
+char **getWholeText(int *);
+
+char *strdup(const char *s)
+{
+    errno = 0;
+    char *p = 0;
+    p = malloc(strlen(s) + 1);
+    if (!p) errno = ENOMEM;
+    if (p) strcpy(p, s);
+    return p;
+}
+
+int main(int argc, char const *argv[])
+{
+    errno = 0;
+    int no_of_lines;
+    char **text = getWholeText(&no_of_lines);
+    if (text == NULL)
+    {
+        exit(1);
+    }
+    reverseWords(text, no_of_lines);
+    if (!errno)
+    {
+        printReversedWords(text, no_of_lines);
+    }
+    freeText(text, no_of_lines);
+    return 0;
+}
+void freeText(char **text, int no_of_lines)
+{
+    for (size_t i = 0; i < no_of_lines; i++)
+    {
+        if (text[i] != NULL)
+        {
+            freeString(text[i]);
+        }
+    }
+    free(text);
+}
+void freeString(char* string)
+{
+    free(string);
+    string = 0;
+}
+void printReversedWords(char **text, int no_of_lines)
 {
     for (int i = no_of_lines - 1; i >= 0; i--)
     {
-        for (int j = word_count[i] - 1; j >= 0; j--)
-        {
-            printf("%s", words[i][j]);
-            if (j > 0)
-            {
-                printf(" ");
-            }
-        }
-        printf("\n");
+        printf("%s\n", text[i]);
     }
-}
-void failureFree(void *main, void *temp)
-{
-    printf("Failed to allocate memory\n");
-    free(temp);
-    temp = 0;
-    free(main);
-    main = 0;
-    exit(1);
 }
 void expandLine(char **line, int size)
 {
     char *temp = (char *)realloc(*line, sizeof(char) * (size + 1));
     if (temp == NULL)
     {
-        failureFree((void *)*line, temp);
+        errno = ENOMEM;
     }
     else
     {
         temp[size] = '\0';
         *line = temp;
-    }
-}
-void expandText(char ***text, int size)
-{
-    char **temp = (char **)realloc(*text, sizeof(char *) * (size + 1));
-    if (temp == NULL)
-    {
-        failureFree((void *)*text, temp);
-    }
-    else
-    {
-        *text = temp;
     }
 }
 char *getLine()
@@ -59,16 +84,37 @@ char *getLine()
     while ((c = getchar()) != EOF && c != '\n')
     {
         expandLine(&line, len);
+        if (errno == ENOMEM)
+        {
+            freeString(line);
+            return NULL;
+        }
         line[len] = (char)c;
         len++;
     }
     if (line != NULL || c != EOF)
     {
         expandLine(&line, len);
+        if (errno == ENOMEM)
+        {
+            freeString(line);
+            return NULL;
+        }
         line[len] = '\0';
     }
-
     return line;
+}
+void expandText(char ***text, int size)
+{
+    char **temp = (char **)realloc(*text, sizeof(char *) * (size + 1));
+    if (temp == NULL)
+    {
+        errno = ENOMEM;
+    }
+    else
+    {
+        *text = temp;
+    }
 }
 char **getWholeText(int *lines)
 {
@@ -78,95 +124,78 @@ char **getWholeText(int *lines)
     while ((s = getLine()))
     {
         expandText(&input, no_of_lines);
+        if (errno == ENOMEM)
+        {
+            freeString(s);
+            freeText(input, no_of_lines);
+            return NULL;
+        }
         input[no_of_lines] = s;
         no_of_lines++;
     }
     *lines = no_of_lines;
     return input;
 }
-char ***parseWords(char **text, int no_of_lines, int *word_count)
+char **tokenize(char *line, int *word_count)
 {
-    char ***words = malloc(sizeof(char **) * no_of_lines);
-    if (words == NULL)
+    char **words = NULL;
+    for (char *s = strtok(line, " "); s != NULL; s = strtok(NULL, " "))
     {
-        return words;
-    }
-    for (size_t i = 0; i < no_of_lines; i++)
-    {
-        words[i] = (char **)malloc(sizeof(char **));
-        if (words[i] == NULL)
+        expandText(&words, *word_count);
+        if (errno == ENOMEM)
         {
+            freeText(words, *word_count);
             return NULL;
         }
-    }
-
-    for (size_t i = 0; i < no_of_lines; i++)
-    {
-        char *temp = strdup(text[i]);
-        for (char *s = strtok(temp, " "); s != NULL; s = strtok(NULL, " "))
+        words[*word_count] = strdup(s);
+        if (errno == ENOMEM)
         {
-            expandText(&words[i], word_count[i]);
-            words[i][word_count[i]] = strdup(s);
-            word_count[i]++;
+            freeText(words, *word_count);
+            return NULL;
         }
-        free(temp);
-        temp = 0;
+        (*word_count)++;
     }
     return words;
 }
-void freeWords(char ***words, int *word_count, int no_of_lines)
+char *concatenateWords(char **words, int word_count, int word_length)
 {
-    for (size_t i = 0; i < no_of_lines; i++)
+    char *buffer_string = malloc(word_length + 1);
+    if (buffer_string == NULL)
     {
-        for (size_t j = 0; j < word_count[i]; j++)
+        errno = ENOMEM;
+        return NULL;
+    }
+    buffer_string[0] = '\0';
+    for (int j = word_count - 1; j >= 0; j--)
+    {
+        strcat(buffer_string, words[j]);
+        if (j > 0)
         {
-            free(words[i][j]);
-            words[i][j] = 0;
+            strcat(buffer_string, " ");
         }
-        free(words[i]);
-        words[i] = 0;
     }
-    free(words);
-    words = 0;
+    return buffer_string;
 }
-void freeText(char **text, int no_of_lines)
+void reverseWords(char **text, int no_of_lines)
 {
     for (size_t i = 0; i < no_of_lines; i++)
     {
-        free(text[i]);
-        text[i] = 0;
+        int word_count = 0;
+        char *temp = strdup(text[i]);
+        if (errno == ENOMEM) break;
+        char **words = tokenize(temp, &word_count);
+        if (errno == ENOMEM)
+        {
+            freeString(temp);
+            break;
+        }
+        char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
+        freeText(words, word_count);
+        freeString(temp);
+        if (errno == ENOMEM) break;
+        freeString(text[i]);
+        text[i] = strdup(buffer_string);
+        freeString(buffer_string);
+        if (errno == ENOMEM) break;
     }
-    free(text);
-    text = 0;
-}
-int main(int argc, char const *argv[])
-{
-    int no_of_lines;
-    char **text = getWholeText(&no_of_lines);
-    if (text == NULL)
-    {
-        goto text_err;
-    }
-    int *word_count = calloc(no_of_lines, sizeof(int));
-    if (word_count == NULL)
-    {
-        goto word_count_err;
-    }
-    char ***words = parseWords(text, no_of_lines, word_count);
-    if (words == NULL)
-    {
-        goto words_err;
-    }
-    printReversedWords(words, word_count, no_of_lines);
-
-words_err:
-    freeWords(words, word_count, no_of_lines);
-word_count_err:
-    free(word_count);
-text_err:
-    freeText(text, no_of_lines);
-
-    word_count = 0;
-
-    return 0;
 }
