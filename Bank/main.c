@@ -31,11 +31,13 @@ node *head = NULL;
 
 int main(int argc, char const *argv[])
 {
-    while (1)
-    {
-        chooseAction();
-        break;
-    }
+    name name = getName();
+    printf("%s\t%s\n", name.first_name, name.surname);
+    // while (1)
+    //{
+    //     chooseAction();
+    //     break;
+    // }
 
     return 0;
 }
@@ -104,23 +106,29 @@ bool confimationOfAction(int action_no)
     getchar();
     return (action == 'y' || action == 'Y');
 }
-void createAccount()
-{
-    IBAN acc_num;
-    generateIBAN(acc_num, head);
-    name acc_name = getName();
-    location address = getLocation();
-    PESEL id_number = getPESEL();
-    double balance_info[BALANCE_INFO_NO];
-    getBalanceInfo(balance_info);
-    node *newAccount = createNode(acc_num, acc_name, address, id_number, balance_info[0],
-                                  balance_info[1], balance_info[2]);
-    pushNode(&head, newAccount);
-    saveData();
-}
+ void createAccount()
+ {
+     IBAN acc_num;
+     generateIBAN(acc_num, head);
+     name acc_name = getName();
+     location address = getLocation();
+     PESEL id_number = getPESEL();
+     double balance_info[BALANCE_INFO_NO];
+     getBalanceInfo(balance_info);
+     node *newAccount = createNode(acc_num, acc_name, address, id_number, balance_info[0],
+                                   balance_info[1], balance_info[2]);
+     pushNode(&head, newAccount);
+     saveData();
+ }
 name getName()
 {
-
+    name output;
+    char *buffer = malloc(100);
+    scanf("%s", buffer);
+    output.first_name = strdup(buffer);
+    scanf("%s", buffer);
+    output.surname = strdup(buffer);
+    return output;
 }
 location getLocation()
 {

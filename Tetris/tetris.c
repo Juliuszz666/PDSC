@@ -94,6 +94,7 @@ void dumpPiece(piece_template *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
 void gameOverMenu(int score);
+point findRotAxis(piece_template *piece);
 
 int main(int argc, char *argv[])
 {
@@ -203,9 +204,31 @@ void drawPiece(piece_template *piece)
         }
     }
 }
+point findRotAxis(piece_template *piece)
+{
+    point retval;
+    for (size_t i = 0; i < PIECE_SIZE; i++)
+    {
+        for (size_t j = 0; j < PIECE_SIZE; j++)
+        {
+            if (piece->piece_layout[i][j].rect_color == GREEN)
+            {
+                retval.x = i;
+                retval.y = j;
+                return retval;
+            }
+        }
+    }
+    return (point){0, 0};
+}
 void rotatePiece(piece_template *piece)
 {
+    point rot_cord_before = findRotAxis(piece);
     piece->rot_state = (piece->rot_state + 1) % PIECE_ROT_NO;
+    updatePiece(piece);
+    point rot_cord_after = findRotAxis(piece);
+    piece->piece_position.x -= rot_cord_after.x - rot_cord_before.x;
+    piece->piece_position.y -= rot_cord_after.y - rot_cord_before.y;
     updatePiece(piece);
     SDL_Delay(KEY_DELAY);
 }

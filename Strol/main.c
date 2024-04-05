@@ -14,7 +14,7 @@ int handleBase(const char *str, int i)
     {
         return 16;
     }
-    if (str[i] == '0' && str[i+1]<'8'&&str[i+1]>='0')
+    if (str[i] == '0')
     {
         return 8;
     }

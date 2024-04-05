@@ -11,8 +11,12 @@
 #define IBAN_LENGTH 26
 #define PESEL_LENGTH 11
 
+#define CHARBUFFER 50
+
 typedef char IBAN[IBAN_LENGTH + 1];
 typedef char PESEL[PESEL_LENGTH + 1];
+//if possible to use
+typedef char fixed_string[CHARBUFFER];
 
 typedef struct
 {
