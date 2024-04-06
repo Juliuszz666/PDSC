@@ -7,7 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-int handleBase(const char *str, int i)
+int skipWhitespace(const char *str);
+bool checkSign(const char c, int *index);
+void handleBase(const char *str, int *base, int *i);
+int handleZeroBase(const char *str, int i);
+void handleHexadec(const char *str, int *i);
+int isInRange(int base, char c);
+
+int handleZeroBase(const char *str, int i)
 {
     if (((strncmp(str + i, "0x", 2) == 0) || (strncmp(str + i, "0X", 2) == 0)))
     {
@@ -23,7 +30,21 @@ int handleBase(const char *str, int i)
     }
     return -1;
 }
-
+void handleBase(const char *str, int *base, int *i)
+{
+    if (*base == 0)
+    {
+        *base = handleZeroBase(str, *i);
+    }
+    if (*base == 1 || *base < 0 || *base > 36)
+    {
+        errno = EINVAL;
+    }
+    if (*base == 16)
+    {
+        handleHexadec(str, i);
+    }
+}
 int isInRange(int base, char c)
 {
     int comp = (int)INFINITY;
@@ -34,37 +55,44 @@ int isInRange(int base, char c)
     }
     return comp < base ? comp : -1;
 }
-
-long int strtol(const char *str, char **ednptr, int base)
+int skipWhitespace(const char *str)
 {
-    errno = 0;
     int i = 0;
     while (isspace(str[i]))
     {
         i++;
     }
-    bool is_negative = (str[i] == '-');
-    if (is_negative || str[i] == '+')
+    return i;
+}
+bool checkSign(const char c, int *index)
+{
+    bool is_negative = (c == '-');
+    if (is_negative || c == '+')
     {
-        i++;
+        (*index)++;
     }
-
-    if (base == 0)
+    return is_negative;
+}
+void handleHexadec(const char *str, int *i)
+{
+    if ((strncmp(str + *i, "0x", 2) == 0) || (strncmp(str + *i, "0X", 2) == 0))
     {
-        base = handleBase(str, i);
-    }
-    if (base == 1 || base < 0 || base > 36)
-    {
-        errno = EINVAL;
-        return 0;
-    }
-    if ((base == 16) && ((strncmp(str + i, "0x", 2) == 0) || (strncmp(str + i, "0X", 2) == 0)))
-    {
-        i += 2;
-        if (!isxdigit(str[i]))
+        *i += 2;
+        if (!isxdigit(str[*i]))
         {
-            i -= 2;
+            *i -= 2;
         }
+    }
+}
+long int strtol(const char *str, char **ednptr, int base)
+{
+    errno = 0;
+    int i = skipWhitespace(str);
+    bool is_negative = checkSign(str[i], &i);
+    handleBase(str, &base, &i);
+    if (errno == EINVAL)
+    {
+        return 0;
     }
     long int retval = 0;
     int num = 0;
@@ -82,15 +110,9 @@ long int strtol(const char *str, char **ednptr, int base)
             *ednptr = (char *)(str + i);
         }
     }
-    switch (errno)
+    if (errno == ERANGE)
     {
-    case ERANGE:
         return is_negative ? LONG_MIN : LONG_MAX;
-        break;
-
-    default:
-        break;
     }
-
     return retval;
 }
