@@ -5,13 +5,14 @@
 
 #include "list.h"
 
-node *createNode(IBAN iban, name input_name, location input_address, PESEL input_pesel,
+node *createNode(IBAN iban, fixed_string first_name, fixed_string surname, fixed_string address, PESEL input_pesel,
                  double input_balance, double input_loan, double input_interest)
 {
     node *new_node = (node *)malloc(sizeof(node));
     strcpy(new_node->account_number, iban);
-    new_node->full_name = input_name;
-    new_node->addres = input_address;
+    strcpy(new_node->first_name, first_name);
+    strcpy(new_node->last_name, surname);
+    strcpy(new_node->addres, address);
     strcpy(new_node->pesel_number, input_pesel);
     new_node->balance = input_balance;
     new_node->bank_loan = input_loan;
