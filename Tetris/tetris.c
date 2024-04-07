@@ -21,7 +21,6 @@
 #define COL_FLAG 2
 #define BUFFER_SIZE 100
 #define BASE_DELAY 250
-#define KEY_DELAY 10
 #define NEXT_X_CO (GRID_WITDH * 1.5)
 #define NEXT_Y_CO (GRID_HEIGHT / 2)
 #define PIECE_KIND_NO 7
@@ -94,6 +93,7 @@ void dumpPiece(piece_template *dumped_piece, int *score);
 void drawGrid();
 void initializeGrid();
 void gameOverMenu(int score);
+void gameLoop(piece_template *current, piece_template *next, int *score);
 point findRotAxis(piece_template *piece);
 
 int main(int argc, char *argv[])
@@ -108,33 +108,37 @@ int main(int argc, char *argv[])
     piece_template next_piece = initializeNext();
     piece_template current_piece = initializePiece(next_piece);
     next_piece = initializeNext();
+    gameLoop(&current_piece, &next_piece, &score);
+    gameOverMenu(score);
+    return 0;
+}
+void gameLoop(piece_template *current_piece, piece_template *next_piece, int *score)
+{
     while (1)
     {
         drawGrid();
-        drawPiece(&current_piece);
-        drawPiece(&next_piece);
+        drawPiece(current_piece);
+        drawPiece(next_piece);
         drawBoard();
         gfx_updateScreen();
-        if (fallPiece(&current_piece))
+        if (fallPiece(current_piece))
         {
-            dumpPiece(&current_piece, &score);
+            dumpPiece(current_piece, score);
             if (isGameOver())
             {
                 break;
             }
-            current_piece = initializePiece(next_piece);
-            next_piece = initializeNext();
+            *current_piece = initializePiece(*next_piece);
+            *next_piece = initializeNext();
         }
         int row_to_delete = rowToDelete();
         if (row_to_delete >= 0)
         {
-            removeRow(row_to_delete, &score);
+            removeRow(row_to_delete, score);
         }
-        handleKeys(&current_piece);
+        handleKeys(current_piece);
         SDL_Delay(BASE_DELAY);
     }
-    gameOverMenu(score);
-    return 0;
 }
 piece_template initializePiece(piece_template next)
 {
@@ -230,7 +234,6 @@ void rotatePiece(piece_template *piece)
     piece->piece_position.x -= rot_cord_after.x - rot_cord_before.x;
     piece->piece_position.y -= rot_cord_after.y - rot_cord_before.y;
     updatePiece(piece);
-    SDL_Delay(KEY_DELAY);
 }
 int findPieceBound(piece_template *piece, short flag)
 {
@@ -278,7 +281,6 @@ void fastFall(piece_template *piece)
     {
         fallPiece(piece);
     }
-    SDL_Delay(KEY_DELAY);
 }
 void dumpPiece(piece_template *dumped, int *score)
 {
@@ -436,7 +438,6 @@ void movePiece(point dir, piece_template *piece)
         }
     }
     updatePiecePos(piece);
-    SDL_Delay(KEY_DELAY);
 }
 int rowToDelete()
 {

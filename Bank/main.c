@@ -17,8 +17,8 @@ void generateIBAN(IBAN, node *);
 bool isIBANoverlapping(node *, IBAN);
 bool confimationOfAction(int);
 
-name getName();
-location getLocation();
+void getName(fixed_string name, fixed_string surname);
+void getLocation();
 
 void createAccount();
 void makeDeposit();
@@ -31,8 +31,9 @@ node *head = NULL;
 
 int main(int argc, char const *argv[])
 {
-    name name = getName();
-    printf("%s\t%s\n", name.first_name, name.surname);
+    fixed_string name, surname;
+    getName(name, surname);
+    printf("%s %s\n", name, surname);
     // while (1)
     //{
     //     chooseAction();
@@ -106,33 +107,40 @@ bool confimationOfAction(int action_no)
     getchar();
     return (action == 'y' || action == 'Y');
 }
- void createAccount()
- {
-     IBAN acc_num;
-     generateIBAN(acc_num, head);
-     name acc_name = getName();
-     location address = getLocation();
-     PESEL id_number = getPESEL();
-     double balance_info[BALANCE_INFO_NO];
-     getBalanceInfo(balance_info);
-     node *newAccount = createNode(acc_num, acc_name, address, id_number, balance_info[0],
-                                   balance_info[1], balance_info[2]);
-     pushNode(&head, newAccount);
-     saveData();
- }
-name getName()
+void createAccount()
 {
-    name output;
-    char *buffer = malloc(100);
-    scanf("%s", buffer);
-    output.first_name = strdup(buffer);
-    scanf("%s", buffer);
-    output.surname = strdup(buffer);
-    return output;
+    IBAN acc_num;
+    PESEL id_number = "11223344551";
+    fixed_string first_name, surname, address;
+    generateIBAN(acc_num, head);
+    // getPESEL(id_number);
+    getName(first_name, surname);
+    getLocation();
+    double balance_info[BALANCE_INFO_NO] = {0};
+    // getBalanceInfo(balance_info);
+    node *newAccount = createNode(acc_num, first_name, surname, address, id_number, balance_info[0],
+                                  balance_info[1], balance_info[2]);
+    pushNode(&head, newAccount);
+    // saveData();
 }
-location getLocation()
+void getName(fixed_string first_name, fixed_string surname)
 {
-
+    fixed_string buffer[2];
+    const char *msg = {"Provide your name\n", "Provide your surname\n"};
+    for (int i = 0; i < sizeof(buffer) / sizeof(fixed_string); i++)
+    {
+        do
+        {
+            system("clear");
+            printf("%s", msg[i]);
+            fgets(buffer[i], CHARBUFFER, stdin);
+        } while (strlen(buffer[i]) - 1 > CHARBUFFER);
+    }
+    strncpy(first_name, buffer[0], CHARBUFFER);
+    strncpy(surname, buffer[1], CHARBUFFER);
+}
+void getLocation()
+{
 }
 void makeDeposit()
 {

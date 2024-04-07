@@ -15,30 +15,15 @@
 
 typedef char IBAN[IBAN_LENGTH + 1];
 typedef char PESEL[PESEL_LENGTH + 1];
-//if possible to use
 typedef char fixed_string[CHARBUFFER];
-
-typedef struct
-{
-    char *first_name;
-    char *surname;
-} name;
-typedef struct
-{
-    char *country;
-    char *region;
-    char *city;
-    char *street;
-    char *st_number;
-    char *apart_num;
-} location;
 
 typedef struct list
 {
     IBAN account_number;
     PESEL pesel_number;
-    name full_name;
-    location addres;
+    fixed_string first_name;
+    fixed_string last_name;
+    fixed_string addres;
     double balance;
     double bank_loan;
     double interest;
@@ -46,7 +31,8 @@ typedef struct list
     struct list *prev;
 } node;
 
-node *createNode(IBAN, name, location, PESEL, double, double, double);
+node *createNode(IBAN, fixed_string first_name, fixed_string surname, fixed_string address, PESEL,
+                 double balance, double loan, double interest);
 void pushNode(node **, node *);
 void removeNode();
 void printList();
