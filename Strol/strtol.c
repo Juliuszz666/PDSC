@@ -12,7 +12,7 @@ bool checkSign(const char c, int *index);
 void handleBase(const char *str, int *base, int *i);
 int handleZeroBase(const char *str, int i);
 void handleHexadec(const char *str, int *i);
-int isInRange(int base, char c);
+int getValue(int base, char c);
 
 int handleZeroBase(const char *str, int i)
 {
@@ -45,7 +45,7 @@ void handleBase(const char *str, int *base, int *i)
         handleHexadec(str, i);
     }
 }
-int isInRange(int base, char c)
+int getValue(int base, char c)
 {
     int comp = (int)INFINITY;
     comp = isdigit(c) ? c - '0' : comp;
@@ -86,7 +86,6 @@ void handleHexadec(const char *str, int *i)
 }
 long int strtol(const char *str, char **ednptr, int base)
 {
-    errno = 0;
     int i = skipWhitespace(str);
     bool is_negative = checkSign(str[i], &i);
     handleBase(str, &base, &i);
@@ -96,7 +95,7 @@ long int strtol(const char *str, char **ednptr, int base)
     }
     long int retval = 0;
     int num = 0;
-    while ((num = isInRange(base, str[i])) != -1 && str[i] != '\0')
+    while ((num = getValue(base, str[i])) != -1 && str[i] != '\0')
     {
         if ((retval > (LONG_MAX - num) / base) || (retval < (LONG_MIN + num) / base))
         {
