@@ -8,43 +8,27 @@
 #include <string.h>
 #include <time.h>
 
-#define IBAN_LENGTH 26
-#define PESEL_LENGTH 11
-
-typedef char IBAN[IBAN_LENGTH + 1];
-typedef char PESEL[PESEL_LENGTH + 1];
-
-typedef struct
-{
-    char *first_name;
-    char *surname;
-} name;
-typedef struct
-{
-    char *country;
-    char *region;
-    char *city;
-    char *street;
-    char *st_number;
-    char *apart_num;
-} location;
+#include "typedefs.h"
 
 typedef struct list
 {
     IBAN account_number;
     PESEL pesel_number;
-    name full_name;
-    location addres;
+    Fixed_string first_name;
+    Fixed_string last_name;
+    Address address;
     double balance;
     double bank_loan;
     double interest;
     struct list *next;
-    struct list *prev;
 } node;
 
-node *createNode(IBAN, name, location, PESEL, double, double, double);
-void pushNode(node **, node *);
+node *createNode(IBAN, Fixed_string first_name, Fixed_string surname, Address address, PESEL,
+                 double balance, double loan, double interest);
+void pushNode(node **cur_head, node *new_head);
 void removeNode();
-void printList();
+node *searchForNode(node **head, void* key, bool (*compare)(void *key, node *ref));
+void deleteList(node **head);
+void printList(node *head);
 
 #endif // __LIST_H__

@@ -1,0 +1,425 @@
+=== Test basic cases === 
+
+ in base 10 is 0
+strtol: Success
+String is not a number
+
+0 in base 16 is 0
+strtol: Success
+End pointer points to ""
+
+1234 in base 10 is 1234
+strtol: Success
+End pointer points to ""
+
+-1234 in base 10 is -1234
+strtol: Success
+End pointer points to ""
+
+F in base 16 is F
+strtol: Success
+End pointer points to ""
+
+-F in base 16 is -F
+strtol: Success
+End pointer points to ""
+
+=== Test passing null end pointer === 
+
+=== Test boundary cases for base 16 when size of long is 4 bytes === 
+
+7FFFFFFE in base 16 is 7FFFFFFE
+strtol: Success
+End pointer points to ""
+
+7FFFFFFF in base 16 is 7FFFFFFF
+strtol: Success
+End pointer points to ""
+
+80000000 in base 16 is 80000000
+strtol: Success
+End pointer points to ""
+
+80000001 in base 16 is 80000001
+strtol: Success
+End pointer points to ""
+
+-7FFFFFFF in base 16 is -7FFFFFFF
+strtol: Success
+End pointer points to ""
+
+-80000000 in base 16 is -80000000
+strtol: Success
+End pointer points to ""
+
+-80000001 in base 16 is -80000001
+strtol: Success
+End pointer points to ""
+
+-80000002 in base 16 is -80000002
+strtol: Success
+End pointer points to ""
+
+=== Test boundary cases for base 16 when size of long is 8 bytes === 
+
+7FFFFFFFFFFFFFFE in base 16 is 7FFFFFFFFFFFFFFE
+strtol: Success
+End pointer points to ""
+
+7FFFFFFFFFFFFFFF in base 16 is 7FFFFFFFFFFFFFFF
+strtol: Success
+End pointer points to ""
+
+8000000000000000 in base 16 is 7FFFFFFFFFFFFFFF
+strtol: Numerical result out of range
+End pointer points to ""
+
+8000000000000001 in base 16 is 7FFFFFFFFFFFFFFF
+strtol: Numerical result out of range
+End pointer points to ""
+
+-7FFFFFFFFFFFFFFF in base 16 is -7FFFFFFFFFFFFFFF
+strtol: Success
+End pointer points to ""
+
+-8000000000000000 in base 16 is -8000000000000000
+strtol: Success
+End pointer points to ""
+
+-8000000000000001 in base 16 is -8000000000000000
+strtol: Numerical result out of range
+End pointer points to ""
+
+-8000000000000002 in base 16 is -8000000000000000
+strtol: Numerical result out of range
+End pointer points to ""
+
+=== Test boundary cases for base 10 when size of long is 4 bytes === 
+
+2147483646 in base 10 is 2147483646
+strtol: Success
+End pointer points to ""
+
+2147483647 in base 10 is 2147483647
+strtol: Success
+End pointer points to ""
+
+2147483648 in base 10 is 2147483648
+strtol: Success
+End pointer points to ""
+
+2147483649 in base 10 is 2147483649
+strtol: Success
+End pointer points to ""
+
+-2147483647 in base 10 is -2147483647
+strtol: Success
+End pointer points to ""
+
+-2147483648 in base 10 is -2147483648
+strtol: Success
+End pointer points to ""
+
+-2147483649 in base 10 is -2147483649
+strtol: Success
+End pointer points to ""
+
+-2147483650 in base 10 is -2147483650
+strtol: Success
+End pointer points to ""
+
+=== Test boundary cases for base 10 when size of long is 8 bytes === 
+
+9223372036854775806 in base 10 is 9223372036854775806
+strtol: Success
+End pointer points to ""
+
+9223372036854775807 in base 10 is 9223372036854775807
+strtol: Success
+End pointer points to ""
+
+9223372036854775808 in base 10 is 9223372036854775807
+strtol: Numerical result out of range
+End pointer points to ""
+
+9223372036854775809 in base 10 is 9223372036854775807
+strtol: Numerical result out of range
+End pointer points to ""
+
+-9223372036854775807 in base 10 is -9223372036854775807
+strtol: Success
+End pointer points to ""
+
+-9223372036854775808 in base 10 is -9223372036854775808
+strtol: Success
+End pointer points to ""
+
+-9223372036854775809 in base 10 is -9223372036854775808
+strtol: Numerical result out of range
+End pointer points to ""
+
+-9223372036854775810 in base 10 is -9223372036854775808
+strtol: Numerical result out of range
+End pointer points to ""
+
+=== Test boundary cases for base 36 when size of long is 4 bytes === 
+
+ZIK0ZI in base 36 is ZIK0ZI
+strtol: Success
+End pointer points to ""
+
+ZIK0ZJ in base 36 is ZIK0ZJ
+strtol: Success
+End pointer points to ""
+
+ZIK0ZK in base 36 is ZIK0ZK
+strtol: Success
+End pointer points to ""
+
+ZIK0ZL in base 36 is ZIK0ZL
+strtol: Success
+End pointer points to ""
+
+-ZIK0ZJ in base 36 is -ZIK0ZJ
+strtol: Success
+End pointer points to ""
+
+-ZIK0ZK in base 36 is -ZIK0ZK
+strtol: Success
+End pointer points to ""
+
+-ZIK0ZL in base 36 is -ZIK0ZL
+strtol: Success
+End pointer points to ""
+
+-ZIK0ZM in base 36 is -ZIK0ZM
+strtol: Success
+End pointer points to ""
+
+=== Test boundary cases for base 36 when size of long is 8 bytes === 
+
+1Y2P0IJ32E8E6 in base 36 is 1Y2P0IJ32E8E6
+strtol: Success
+End pointer points to ""
+
+1Y2P0IJ32E8E7 in base 36 is 1Y2P0IJ32E8E7
+strtol: Success
+End pointer points to ""
+
+1Y2P0IJ32E8E8 in base 36 is 1Y2P0IJ32E8E7
+strtol: Numerical result out of range
+End pointer points to ""
+
+1Y2P0IJ32E8E9 in base 36 is 1Y2P0IJ32E8E7
+strtol: Numerical result out of range
+End pointer points to ""
+
+-1Y2P0IJ32E8E7 in base 36 is -1Y2P0IJ32E8E7
+strtol: Success
+End pointer points to ""
+
+-1Y2P0IJ32E8E8 in base 36 is -1Y2P0IJ32E8E8
+strtol: Success
+End pointer points to ""
+
+-1Y2P0IJ32E8E9 in base 36 is -1Y2P0IJ32E8E8
+strtol: Numerical result out of range
+End pointer points to ""
+
+-1Y2P0IJ32E8EA in base 36 is -1Y2P0IJ32E8E8
+strtol: Numerical result out of range
+End pointer points to ""
+
+=== Test parsing whitespace characters === 
+
+ 	
+ -0x234 in base 16 is -234
+strtol: Success
+End pointer points to ""
+
+ 	
+ +128 in base 10 is 128
+strtol: Success
+End pointer points to ""
+
+ 	
+ + 128 in base 10 is 0
+strtol: Success
+String is not a number
+
+=== Test setting end pointer === 
+
+-0x7FFFFFFEEEEEEEEEEE??? in base 16 is -8000000000000000
+strtol: Numerical result out of range
+End pointer points to "???"
+
+-0xZZZZZZZZZZZZZZZZ??? in base 36 is -1Y2P0IJ32E8E8
+strtol: Numerical result out of range
+End pointer points to "???"
+
+438488348HU12325235235 in base 10 is 438488348
+strtol: Success
+End pointer points to "HU12325235235"
+
+=== Test decimal base recognition === 
+
+9 in base 0 is 9
+strtol: Success
+End pointer points to ""
+
+-9 in base 0 is -9
+strtol: Success
+End pointer points to ""
+
+21474836481 in base 0 is 21474836481
+strtol: Success
+End pointer points to ""
+
+-21474836481 in base 0 is -21474836481
+strtol: Success
+End pointer points to ""
+
+=== Test octal base recognition === 
+
+07 in base 0 is 7
+strtol: Success
+End pointer points to ""
+
+-07 in base 0 is -7
+strtol: Success
+End pointer points to ""
+
+071 in base 0 is 71
+strtol: Success
+End pointer points to ""
+
+-071 in base 0 is -71
+strtol: Success
+End pointer points to ""
+
+=== Test hexadecimal base recognition === 
+
+0xF in base 0 is F
+strtol: Success
+End pointer points to ""
+
+-0xF in base 0 is -F
+strtol: Success
+End pointer points to ""
+
+0x in base 0 is 0
+strtol: Success
+End pointer points to "x"
+
+-0x in base 0 is 0
+strtol: Success
+End pointer points to "x"
+
+0x7FFFFFFE in base 0 is 7FFFFFFE
+strtol: Success
+End pointer points to ""
+
+-0x7FFFFFFE in base 0 is -7FFFFFFE
+strtol: Success
+End pointer points to ""
+
+=== Test zero is not misled with octal prefix === 
+
+08 in base 0 is 0
+strtol: Success
+End pointer points to "8"
+
+08 in base 8 is 0
+strtol: Success
+End pointer points to "8"
+
+0r in base 0 is 0
+strtol: Success
+End pointer points to "r"
+
+0r in base 8 is 0
+strtol: Success
+End pointer points to "r"
+
+-08 in base 0 is 0
+strtol: Success
+End pointer points to "8"
+
+-08 in base 8 is 0
+strtol: Success
+End pointer points to "8"
+
+-0r in base 0 is 0
+strtol: Success
+End pointer points to "r"
+
+-0r in base 8 is 0
+strtol: Success
+End pointer points to "r"
+
+=== Test zero is not misled with hexadecimal prefix === 
+
+0xG in base 0 is 0
+strtol: Success
+End pointer points to "xG"
+
+0xG in base 16 is 0
+strtol: Success
+End pointer points to "xG"
+
+0xr in base 0 is 0
+strtol: Success
+End pointer points to "xr"
+
+0xr in base 16 is 0
+strtol: Success
+End pointer points to "xr"
+
+-0xG in base 0 is 0
+strtol: Success
+End pointer points to "xG"
+
+-0xG in base 16 is 0
+strtol: Success
+End pointer points to "xG"
+
+-0xr in base 0 is 0
+strtol: Success
+End pointer points to "xr"
+
+-0xr in base 16 is 0
+strtol: Success
+End pointer points to "xr"
+
+=== Test invalid string === 
+
++#$#$ in base 36 is 0
+strtol: Success
+String is not a number
+
+-#$#$ in base 36 is 0
+strtol: Success
+String is not a number
+
+=== Test invalid base === 
+
+-#$#$ in base 40 is 0
+strtol: Invalid argument
+String is not a number
+
+10 in base 40 is 0
+strtol: Invalid argument
+String is not a number
+
+10 in base 1 is 0
+strtol: Invalid argument
+String is not a number
+
+0 in base 1 is 0
+strtol: Invalid argument
+String is not a number
+
+0 in base -1 is 0
+strtol: Invalid argument
+String is not a number
+
