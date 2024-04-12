@@ -3,23 +3,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-void freeText(char **, int);
-void printReversedWords(char **, int);
-void reverseWords(char **, int);
-void expandLine(char **, int);
-void expandText(char ***, int);
-void freeString(char*);
-char *concatenateWords(char **, int, int);
-char *getLine(void);
-char **getWholeText(int *);
+void freeText(char **text, int no_of_lines);
+void printReversedWords(char **text, int no_of_lines);
+void reverseWords(char **text, int no_of_lines);
+void expandLine(char **line, int size);
+void expandText(char ***text, int size);
+void freeString(char *string);
+char *concatenateWords(char **words, int word_count, int word_length);
+char *getLine();
+char **getWholeText(int *lines);
+char **tokenize(char *line, int *word_count);
+void reverseLine(char **text);
 
 char *strdup(const char *s)
 {
     errno = 0;
     char *p = 0;
     p = malloc(strlen(s) + 1);
-    if (!p) errno = ENOMEM;
-    if (p) strcpy(p, s);
+    if (!p)
+        errno = ENOMEM;
+    else
+        strcpy(p, s);
     return p;
 }
 
@@ -51,7 +55,7 @@ void freeText(char **text, int no_of_lines)
     }
     free(text);
 }
-void freeString(char* string)
+void freeString(char *string)
 {
     free(string);
     string = 0;
@@ -180,22 +184,34 @@ void reverseWords(char **text, int no_of_lines)
 {
     for (size_t i = 0; i < no_of_lines; i++)
     {
-        int word_count = 0;
-        char *temp = strdup(text[i]);
-        if (errno == ENOMEM) break;
-        char **words = tokenize(temp, &word_count);
+        reverseLine(&text[i]);
         if (errno == ENOMEM)
         {
-            freeString(temp);
             break;
         }
-        char *buffer_string = concatenateWords(words, word_count, strlen(text[i]) + 1);
-        freeText(words, word_count);
-        freeString(temp);
-        if (errno == ENOMEM) break;
-        freeString(text[i]);
-        text[i] = strdup(buffer_string);
-        freeString(buffer_string);
-        if (errno == ENOMEM) break;
     }
+}
+void reverseLine(char **text)
+{
+    int word_count = 0;
+    char *temp = strdup(*text);
+    if (errno == ENOMEM)
+    {
+        return;
+    }
+    char **words = tokenize(temp, &word_count);
+    if (errno == ENOMEM)
+    {
+        freeString(temp);
+        return;
+    }
+    char *buffer_string = concatenateWords(words, word_count, strlen(*text) + 1);
+    freeText(words, word_count);
+    freeString(temp);
+    if (errno == ENOMEM)
+    {
+        return;
+    }
+    freeString(*text);
+    *text = buffer_string;
 }
