@@ -27,6 +27,8 @@ bool confimationOfAction(int);
 void getName(Fixed_string name, Fixed_string surname);
 void getPESEL(PESEL pesel);
 void getLocation(Address location);
+double getMoneyValue(const char* msg);
+node *findAccount();
 
 void createAccount();
 void makeDeposit();
@@ -34,6 +36,13 @@ void makeWithdrawal();
 void transferMoney();
 void takeLoan();
 void payDebt();
+
+void waitingForQuit()
+{
+    char quit;
+    while ((quit = getchar()) != 'q' && quit != 'Q')
+        ;
+}
 
 node *head = NULL;
 
@@ -205,47 +214,53 @@ bool compareIBAN(void *key, node *ref)
 {
     return (memcmp(key, ref->account_number, IBAN_LENGTH));
 }
-void makeDeposit()
+node *findAccount()
 {
-    loadData();
-    node *action_node = NULL;
     system("clear");
     printf("Provide account number: ");
     IBAN action_account;
     fgets(action_account, IBAN_LENGTH + 1, stdin);
-    action_node = searchForNode(&head, action_account, compareIBAN);
+    return searchForNode(&head, action_account, compareIBAN);
+}
+double getMoneyValue(const char* msg)
+{
+    printf("Provide amount you want to %s\n", msg);
+    Fixed_string buffer;
+    while (getchar() != '\n')
+        ;
+    fgets(buffer, CHARBUFFER, stdin);
+    return strtod(buffer, NULL);
+}
+void makeDeposit()
+{
+    loadData();
+    node *action_node = findAccount();
     if (action_node == NULL)
     {
         printf("Invalid account number!\n");
+        goto invalid_acc;
+    }
+    double deposit = getMoneyValue("deposit");
+    if (CASH_MIN >= (deposit + action_node->balance) ||
+        CASH_MAX <= (deposit + action_node->balance))
+    {
+        errno = ERANGE;
+        perror("Value overflow, operation terminated");
+        waitingForQuit();
+    }
+    else if (deposit <= 0)
+    {
+        errno = ERANGE;
+        perror("Deposit amount must be positive");
+        waitingForQuit();
     }
     else
     {
-        char quit;
-        printf("Provide amount you want to deposit\n");
-        Fixed_string buffer;
-        while (getchar() != '\n');
-        fgets(buffer, CHARBUFFER, stdin);
-        double deposit = strtod(buffer, NULL);
-        if (CASH_MIN >= (deposit + action_node->balance) ||
-            CASH_MAX <= (deposit + action_node->balance))
-        {
-            errno = ERANGE;
-            perror("Value overflow, operation terminated");
-            while ((quit = getchar()) != 'q' && quit != 'Q');
-        }
-        else if (deposit <= 0)
-        {
-            errno = ERANGE;
-            perror("Deposit amount must be positive");
-            while ((quit = getchar()) != 'q' && quit != 'Q');
-        }
-        else
-        {
-            action_node->balance += deposit;
-            printf("Operation sucessful\nPress q/Q to continue\n");
-            while ((quit = getchar()) != 'q' && quit != 'Q');
-        }
+        action_node->balance += deposit;
+        printf("Operation sucessful\nPress q/Q to continue\n");
+        waitingForQuit();
     }
+    invalid_acc:
     saveData();
     deleteList(&head);
 }
