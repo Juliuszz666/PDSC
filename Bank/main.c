@@ -27,8 +27,8 @@ bool confimationOfAction(int);
 void getName(Fixed_string name, Fixed_string surname);
 void getPESEL(PESEL pesel);
 void getLocation(Address location);
-double getMoneyValue(const char* msg);
-node *findAccount();
+double getMoneyValue(const char *msg);
+node *findAccount(const char *msg);
 
 void createAccount();
 void makeDeposit();
@@ -45,12 +45,15 @@ void waitingForQuit()
 }
 
 node *head = NULL;
+char quit_flag = 0;
 
 int main(int argc, char const *argv[])
 {
     while (1)
     {
         chooseAction();
+        if (quit_flag)
+            break;
     }
 
     return 0;
@@ -214,16 +217,17 @@ bool compareIBAN(void *key, node *ref)
 {
     return (memcmp(key, ref->account_number, IBAN_LENGTH));
 }
-node *findAccount()
+node *findAccount(const char *msg)
 {
     system("clear");
-    printf("Provide account number: ");
+    printf("Provide %saccount number: ", msg);
     IBAN action_account;
     fgets(action_account, IBAN_LENGTH + 1, stdin);
     return searchForNode(&head, action_account, compareIBAN);
 }
-double getMoneyValue(const char* msg)
+double getMoneyValue(const char *msg)
 {
+    system("clear");
     printf("Provide amount you want to %s\n", msg);
     Fixed_string buffer;
     while (getchar() != '\n')
@@ -234,24 +238,17 @@ double getMoneyValue(const char* msg)
 void makeDeposit()
 {
     loadData();
-    node *action_node = findAccount();
+    node *action_node = findAccount("");
     if (action_node == NULL)
     {
         printf("Invalid account number!\n");
         goto invalid_acc;
     }
     double deposit = getMoneyValue("deposit");
-    if (CASH_MIN >= (deposit + action_node->balance) ||
-        CASH_MAX <= (deposit + action_node->balance))
+    if (CASH_MAX <= (deposit + action_node->balance) || deposit <= 0)
     {
         errno = ERANGE;
         perror("Value overflow, operation terminated");
-        waitingForQuit();
-    }
-    else if (deposit <= 0)
-    {
-        errno = ERANGE;
-        perror("Deposit amount must be positive");
         waitingForQuit();
     }
     else
@@ -260,17 +257,67 @@ void makeDeposit()
         printf("Operation sucessful\nPress q/Q to continue\n");
         waitingForQuit();
     }
-    invalid_acc:
+invalid_acc:
     saveData();
     deleteList(&head);
 }
 void makeWithdrawal()
 {
-    printf("GIIT\n");
+    loadData();
+    node *action_node = findAccount("");
+    if (action_node == NULL)
+    {
+        printf("Invalid account number!\n");
+        waitingForQuit();
+        goto invalid_acc;
+    }
+    double withdrawal = getMoneyValue("withdraw");
+    if (0 >= (action_node->balance - withdrawal) || withdrawal >= CASH_MAX || withdrawal <= 0)
+    {
+        errno = ERANGE;
+        perror("Value overflow, operation terminated");
+        waitingForQuit();
+    }
+    else
+    {
+        action_node->balance -= withdrawal;
+        printf("Operation sucessful\nPress q/Q to continue\n");
+        waitingForQuit();
+    }
+invalid_acc:
+    saveData();
+    deleteList(&head);
 }
 void transferMoney()
 {
-    printf("GIIT\n");
+    loadData();
+    node *src_account = findAccount("source ");
+    while (getchar() != '\n');
+    node *dst_account = findAccount("destination ");
+    if (src_account == NULL || dst_account == NULL)
+    {
+        printf("Invalid account number!\n");
+        waitingForQuit();
+        goto invalid_acc;
+    }
+    double transfer = getMoneyValue("transfer");
+    if (0 >= (src_account->balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
+        (dst_account->balance + transfer) >= CASH_MAX)
+    {
+        errno = ERANGE;
+        perror("Value overflow, operation terminated");
+        waitingForQuit();
+    }
+    else
+    {
+        src_account->balance -= transfer;
+        dst_account->balance += transfer;
+        printf("Operation sucessful\nPress q/Q to continue\n");
+        waitingForQuit();
+    }
+invalid_acc:
+    saveData();
+    deleteList(&head);
 }
 void takeLoan()
 {
