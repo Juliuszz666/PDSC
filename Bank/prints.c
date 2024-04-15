@@ -26,5 +26,24 @@ void printDisplayOptions()
     system("clear");
     printf("***\t\t\tChoose want you want to do\t\t\t***\n");
     printf("***\t\t\t1.\tList all accounts\t\t\t***\n");
-    printf("***\t\t\t2.\tSearch an account\t\t\t\t***\n");
+    printf("***\t\t\t2.\tSearch an account\t\t\t***\n");
+}
+void printERANGE()
+{
+    system("clear");
+    perror("Value overflow, operation terminated");
+    waitingForQuit();
+}
+void printSuccess()
+{
+    system("clear");
+    printf("Operation sucessful\nPress q/Q to continue\n");
+    waitingForQuit();
+}
+void waitingForQuit()
+{
+    char quit;
+    while ((quit = getchar()) != 'q' && quit != 'Q')
+        ;
+    
 }

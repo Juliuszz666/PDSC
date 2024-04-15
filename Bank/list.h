@@ -29,6 +29,16 @@ void pushNode(node **cur_head, node *new_head);
 void removeNode();
 node *searchForNode(node **head, void* key, bool (*compare)(void *key, node *ref));
 void deleteList(node **head);
-void printList(node *head);
+void printList(node *head, bool (*condition)(const char *key, node *ref), char *key);
+void printAllList(node *head);
+void searchList(node *head);
+
+void getSearchKey(Fixed_string search_key);
+
+bool findName(const char *key, node *ref);
+bool findSurname(const char *key, node *ref);
+bool findAddress(const char *key, node *ref);
+bool findPESEL(const char *key, node *ref);
+bool findAccountNumber(const char *key, node *ref);
 
 #endif // __LIST_H__

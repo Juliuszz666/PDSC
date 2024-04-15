@@ -8,7 +8,7 @@ main: main.o list.o prints.o
 
 list.o: list.c list.h
 
-main.o: main.c list.h
+main.o: main.c list.h prints.h
 
 prints.o: prints.c prints.h
 

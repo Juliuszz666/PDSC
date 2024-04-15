@@ -6,5 +6,8 @@
 void printActions();
 void printModifyingOptions();
 void printDisplayOptions();
+void waitingForQuit();
+void printERANGE();
+void printSuccess();
 
-#endif
+#endif // __PRINTS_H__

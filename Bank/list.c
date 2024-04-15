@@ -57,7 +57,7 @@ void printLine()
     printf("\n");
 }
 
-void printList(node *head)
+void printList(node *head, bool (*condition)(const char *key, node *ref), char *key)
 {
     system("clear");
     node *temp = head;
@@ -65,13 +65,17 @@ void printList(node *head)
     printf("| %-26s | %-20s | %-20s | %-56s | %-11s | %-15s | %-15s | %-15s |\n", "Account Number",
            "First Name", "Last Name", "Address", "PESEL", "Balance", "Bank Loan", "Interest");
     printLine();
+    bool is_condition = (condition != NULL);
     while (temp != NULL)
     {
-        printf("| %-26s | %-20s | %-20s | %-56s | %-11s | %-15.2f | %-15.2f | %-15.2f |\n",
-               temp->account_number, temp->first_name, temp->last_name, temp->address,
-               temp->pesel_number, temp->balance, temp->bank_loan, temp->interest);
+        if ((is_condition && (*condition)(key, temp)) || !is_condition)
+        {
+            printf("| %-26s | %-20s | %-20s | %-56s | %-11s | %-15.2f | %-15.2f | %-15.2f |\n",
+                   temp->account_number, temp->first_name, temp->last_name, temp->address,
+                   temp->pesel_number, temp->balance, temp->bank_loan, temp->interest);
+            printLine();
+        }
         temp = temp->next;
-        printLine();
     }
     while (getchar() != 'q')
         ;
@@ -84,4 +88,70 @@ node *searchForNode(node **head, void *key, bool (*compare)(void *key, node *ref
         temp = temp->next;
     }
     return temp;
+}
+void printAllList(node *head)
+{
+    printList(head, NULL, NULL);
+}
+bool findName(const char *key, node *ref)
+{
+    return (strstr(ref->first_name, key) != NULL);
+}
+bool findSurname(const char *key, node *ref)
+{
+    return (strstr(ref->last_name, key) != NULL);
+}
+bool findAddress(const char *key, node *ref)
+{
+    return (strstr(ref->address, key) != NULL);
+}
+bool findPESEL(const char *key, node *ref)
+{
+    return (strstr(ref->pesel_number, key) != NULL);
+}
+bool findAccountNumber(const char *key, node *ref)
+{
+    return (strstr(ref->account_number, key) != NULL);
+}
+void searchList(node *head)
+{
+    system("clear");
+    printf("Enter by what you want to search:\n");
+    bool (*searchFun)(const char *key, node *ref);
+    Fixed_string search_type;
+    Fixed_string search_key;
+    fgets(search_type, sizeof(search_type), stdin);
+    search_type[strcspn(search_type, "\n")] = '\0';
+    if (strcmp(search_type, "account number") == 0)
+    {
+        searchFun = &findAccountNumber;
+    }
+    else if (strcmp(search_type, "first name") == 0)
+    {
+        searchFun = &findName;
+    }
+    else if (strcmp(search_type, "last name") == 0)
+    {
+        searchFun = &findSurname;
+    }
+    else if (strcmp(search_type, "address") == 0)
+    {
+        searchFun = &findAddress;
+    }
+    else if (strcmp(search_type, "pesel") == 0)
+    {
+        searchFun = &findPESEL;
+    }
+    else
+    {
+        printf("Invalid search key\n");
+        return;
+    }
+    getSearchKey(search_key);
+    printList(head, searchFun, search_key);
+}
+void getSearchKey(Fixed_string search_key)
+{
+    fgets(search_key, CHARBUFFER, stdin);
+    search_key[strcspn(search_key, "\n")] = '\0';
 }
