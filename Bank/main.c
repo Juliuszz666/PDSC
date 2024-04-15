@@ -37,6 +37,14 @@ void transferMoney();
 void takeLoan();
 void payDebt();
 
+int getAction()
+{
+    int key = getchar();
+    while (getchar() != '\n')
+        ;
+    return key;
+}
+
 node *head = NULL;
 char quit_flag = 0;
 
@@ -45,6 +53,10 @@ int main(int argc, char const *argv[])
     while (1)
     {
         chooseAction();
+        if (quit_flag)
+        {
+            break;
+        }
     }
 
     return 0;
@@ -92,10 +104,7 @@ void saveData()
 void chooseAction()
 {
     printActions();
-    int key = getchar();
-    while (getchar() != '\n')
-        ;
-    
+    int key = getAction();
     switch (key)
     {
     case '1':
@@ -103,6 +112,11 @@ void chooseAction()
         break;
     case '2':
         chooseDisplayOperation();
+        break;
+    case '3':
+        printHelpMenu();
+    case '4':
+        quit_flag = 1;
         break;
     default:
         break;
@@ -113,10 +127,7 @@ void chooseModifyingOperation()
 {
     void (*functionPointer)(void);
     printModifyingOptions();
-    int key = getchar();
-    while (getchar() != '\n')
-        ;
-
+    int key = getAction();
     switch (key)
     {
     case '1':
@@ -371,9 +382,7 @@ void chooseDisplayOperation()
     void (*functionPointer)(node *);
     system("clear");
     printDisplayOptions();
-    int key = getchar();
-    while (getchar() != '\n')
-        ;
+    int key = getAction();
 
     switch (key)
     {

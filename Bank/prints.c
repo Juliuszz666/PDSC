@@ -9,6 +9,8 @@ void printActions()
     printf("***\t\t\tChoose want you want to do\t\t\t***\n");
     printf("***\t\t\t1.\tModify something\t\t\t***\n");
     printf("***\t\t\t2.\tSee something\t\t\t\t***\n");
+    printf("***\t\t\t3.\tHelp\t\t\t\t\t***\n");
+    printf("***\t\t\t4.\tQuit program\t\t\t\t***\n");
 }
 void printModifyingOptions()
 {
@@ -45,5 +47,26 @@ void waitingForQuit()
     char quit;
     while ((quit = getchar()) != 'q' && quit != 'Q')
         ;
-    
+    while (getchar() != '\n')
+        ;
+}
+void printSearchOptions()
+{
+    system("clear");
+    printf("Enter by what you want to search\n");
+    printf("acc num\t-\taccount number\n");
+    printf("fname\t-\tfirst name\n");
+    printf("lname\t-\tlast name\n");
+    printf("addr\t-\taddress\n");
+    printf("pesel\t-\tPESEL number\n");
+}
+void printHelpMenu()
+{
+    system("clear");
+    printf("This is a simple bank program\n");
+    printf("You can create accounts, make deposits, withdrawals, \nmoney transfers, take loans and pay debts\n");
+    printf("You can also list all accounts and search for specific ones\n");
+    printf("You choose actions by pressing number assigned to them and then pressing enter\n");
+    printf("Press q/Q to continue after every interaction\n");
+    waitingForQuit();
 }

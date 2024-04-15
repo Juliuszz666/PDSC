@@ -9,5 +9,7 @@ void printDisplayOptions();
 void waitingForQuit();
 void printERANGE();
 void printSuccess();
+void printSearchOptions();
+void printHelpMenu();
 
 #endif // __PRINTS_H__
