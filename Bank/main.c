@@ -115,6 +115,7 @@ void chooseAction()
         break;
     case '3':
         printHelpMenu();
+        break;
     case '4':
         quit_flag = 1;
         break;
