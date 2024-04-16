@@ -11,5 +11,6 @@ void printERANGE();
 void printSuccess();
 void printSearchOptions();
 void printHelpMenu();
+void getString(char *str, int bufsiz);
 
 #endif // __PRINTS_H__

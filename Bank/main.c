@@ -195,8 +195,7 @@ void getPESEL(PESEL pesel)
     {
         system("clear");
         printf("Enter your PESEL: ");
-        fgets(buffer, sizeof(Fixed_string), stdin);
-        buffer[strcspn(buffer, "\n")] = '\0';
+        getString(buffer, PESEL_LENGTH + 1);
     } while (strlen(buffer) != PESEL_LENGTH);
     strcpy(pesel, buffer);
 }
@@ -204,21 +203,16 @@ void getName(Fixed_string first_name, Fixed_string surname)
 {
     system("clear");
     printf("Enter first name: ");
-    fgets(first_name, sizeof(Fixed_string), stdin);
-    first_name[strcspn(first_name, "\n")] = '\0';
+    getString(first_name, CHARBUFFER);
     system("clear");
     printf("Enter surname: ");
-    fgets(surname, sizeof(Fixed_string), stdin);
-    surname[strcspn(surname, "\n")] = '\0';
+    getString(surname, CHARBUFFER);
 }
 void getLocation(Address location)
 {
     system("clear");
     printf("Enter your address: ");
-    fgets(location, sizeof(Address), stdin);
-    location[strcspn(location, "\n")] = '\0';
-    printf("%s\n", location);
-    printf("%ld\n", strlen(location));
+    getString(location, ADDRBUFFER);
 }
 bool compareIBAN(void *key, node *ref)
 {
@@ -229,7 +223,7 @@ node *findAccount(const char *msg)
     system("clear");
     printf("Provide %saccount number: ", msg);
     IBAN action_account;
-    fgets(action_account, IBAN_LENGTH + 1, stdin);
+    getString(action_account, IBAN_LENGTH + 1);
     return searchForNode(&head, action_account, compareIBAN);
 }
 double getMoneyValue(const char *msg)
@@ -237,9 +231,7 @@ double getMoneyValue(const char *msg)
     system("clear");
     printf("Provide amount you want to %s\n", msg);
     Fixed_string buffer;
-    while (getchar() != '\n')
-        ;
-    fgets(buffer, CHARBUFFER, stdin);
+    getString(buffer, CHARBUFFER);
     return strtod(buffer, NULL);
 }
 void makeDeposit()

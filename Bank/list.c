@@ -117,16 +117,14 @@ void searchList(node *head)
 {
     printSearchOptions();
     bool (*searchFun)(const char *key, node *ref);
-    bool isIBAN = false;
+    short len = CHARBUFFER;
     Fixed_string search_type;
-    Fixed_string search_key;
-    IBAN iban_key;
-    fgets(search_type, sizeof(search_type), stdin);
-    search_type[strcspn(search_type, "\n")] = '\0';
+    Address search_key;
+    getString(search_type, CHARBUFFER);
     if (strcmp(search_type, "acc num") == 0)
     {
         searchFun = &findAccountNumber;
-        isIBAN = true;
+        len = IBAN_LENGTH + 1;
     }
     else if (strcmp(search_type, "fname") == 0)
     {
@@ -139,25 +137,25 @@ void searchList(node *head)
     else if (strcmp(search_type, "addr") == 0)
     {
         searchFun = &findAddress;
+        len = ADDRBUFFER + 1;
     }
     else if (strcmp(search_type, "pesel") == 0)
     {
         searchFun = &findPESEL;
+        len = PESEL_LENGTH + 1;
     }
     else
     {
-        printf("Invalid search key\n");
+        printf("Invalid search type\n");
         waitingForQuit();
         return;
     }
-    getSearchKey(search_key, iban_key,isIBAN);
+    getSearchKey(search_key, len);
     printList(head, searchFun, search_key);
 }
-void getSearchKey(Fixed_string search_key, IBAN iban_key, bool isIBAN)
+void getSearchKey(char* search_key, short len)
 {
     system("clear");
     printf("Enter search key: ");
-    fgets(isIBAN ? iban_key : search_key, isIBAN ? IBAN_LENGTH : CHARBUFFER, stdin);
-    if(isIBAN) iban_key[strcspn(iban_key, "\n")] = '\0';
-    else search_key[strcspn(search_key, "\n")] = '\0';
+    getString(search_key, len);
 }

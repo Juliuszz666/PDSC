@@ -33,7 +33,7 @@ void printList(node *head, bool (*condition)(const char *key, node *ref), char *
 void printAllList(node *head);
 void searchList(node *head);
 
-void getSearchKey(Fixed_string search_key, IBAN iban_key, bool isIBAN);
+void getSearchKey(char *search_key, short len);
 
 bool findName(const char *key, node *ref);
 bool findSurname(const char *key, node *ref);

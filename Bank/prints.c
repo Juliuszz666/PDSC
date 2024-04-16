@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "prints.h"
 
@@ -64,9 +65,20 @@ void printHelpMenu()
 {
     system("clear");
     printf("This is a simple bank program\n");
-    printf("You can create accounts, make deposits, withdrawals, \nmoney transfers, take loans and pay debts\n");
+    printf("You can create accounts, make deposits, withdrawals, \nmoney transfers, take loans and "
+           "pay debts\n");
     printf("You can also list all accounts and search for specific ones\n");
     printf("You choose actions by pressing number assigned to them and then pressing enter\n");
     printf("Press q/Q to continue after every interaction\n");
     waitingForQuit();
+}
+void getString(char *str, int bufsiz)
+{
+    fgets(str, bufsiz, stdin);
+    if (strlen(str) >= bufsiz - 1)
+    {
+        while (getchar() != '\n' && getchar() != EOF)
+            ;
+    }
+    str[strcspn(str, "\n")] = '\0';
 }
