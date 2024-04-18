@@ -8,7 +8,6 @@ int run_test(void *arr, int n, size_t size, void *key, void *expected, int (*com
     } else if (item == NULL && expected == NULL) {
         return 1;
     } else {
-        printf("%p, %p\n", item, expected);
         return 0;
     }
 }
@@ -32,6 +31,12 @@ int main() {
         char key_char = 'a' + i;
         successful_tests += run_test(arr_char, 10, sizeof(char), &key_char, &arr_char[i], compareChar);
     }
+    printf("Number of successful tests: %d\n", successful_tests);
+    for (int i = 0; i < 10; i++) {
+        test_t arr[] = {{1, "Julian"},{2, "John"},{3, "Doe"},{4, "Jane"},{5, "Doe"},{6, "John"},{7, "Julian"},{8, "Jane"},{9, "Doe"},{10, "John"}};
+        int key_struct = i + 1;
+        successful_tests += run_test(arr, 10, sizeof(test_t), &key_struct, &arr[i].test_key, compareStruct);
+        }
     printf("Number of successful tests: %d\n", successful_tests);
 
     return 0;

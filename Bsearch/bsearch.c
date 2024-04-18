@@ -1,6 +1,13 @@
 #include "bsearch.h"
 #include <stdint.h>
 
+int compareStruct(const void *num1, const void *num2)
+{
+    test_t *left = (test_t *)num1;
+    test_t *right = (test_t *)num2;
+    return ((left->test_key > right->test_key) - (left->test_key < right->test_key));
+}
+
 int compareDouble(const void *num1, const void *num2)
 {
     double *left = (double *)num1;
