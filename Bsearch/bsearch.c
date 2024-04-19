@@ -30,10 +30,6 @@ void *bsearch(const void *key, const void *base, size_t count, size_t size,
               int (*compare)(const void *, const void *))
 {
     __uint8_t *middle = (__uint8_t *)base + (size * (count / 2));
-    if (count == 0)
-    {
-        return NULL;
-    }
     if (count == 1)
     {
         return (*compare)(key, middle) ? NULL : middle;
