@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "prints.h"
+#include "typedefs.h"
 
 void printActions()
 {
@@ -40,12 +41,13 @@ void printERANGE()
 void printSuccess()
 {
     system("clear");
-    printf("Operation sucessful\nPress q/Q to continue\n");
+    printf("Operation sucessful\n");
     waitingForQuit();
 }
 void waitingForQuit()
 {
     char quit;
+    printf("Press q/Q to continue\n");
     while ((quit = getchar()) != 'q' && quit != 'Q')
         ;
     while (getchar() != '\n')
@@ -60,6 +62,7 @@ void printSearchOptions()
     printf("lname\t-\tlast name\n");
     printf("addr\t-\taddress\n");
     printf("pesel\t-\tPESEL number\n");
+    printf("id\t-\taccount id\n");
 }
 void printHelpMenu()
 {
@@ -81,4 +84,21 @@ void getString(char *str, int bufsiz)
             ;
     }
     str[strcspn(str, "\n")] = '\0';
+}
+double getDouble(double min, double max, const char *msg)
+{
+    double value;
+    char buffer[CHARBUFFER];
+    do
+    {
+        system("clear");
+        printf("Enter value of %s: ", msg);
+        getString(buffer, CHARBUFFER);
+        value = strtod(buffer, NULL);
+        if (value <= min || value > max)
+        {
+            printf("Value out of range! Try again: ");
+        }
+    } while (value <= min || value > max);
+    return value;
 }
