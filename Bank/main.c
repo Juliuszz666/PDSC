@@ -19,53 +19,53 @@ void getBalance(account_t *new);
 void getLoanInfo(account_t *new);
 void generateIBAN(account_t *new);
 bool isIBANoverlapping(IBAN check_val);
-void createAccount();
 
-account_t findAccount(const char* msg, bool* found);
+void createAccount();
 void makeDeposit();
 void makeWithdrawal();
 void transferMoney();
+void takeLoan();
+void payDebt();
+
+account_t findAccount(const char *msg, bool *found);
 void updateTransfer(account_t source, account_t destination);
 void updateAccount(account_t updated);
 
+void chooseAction();
+void chooseModifyingOperation();
+bool confimationOfAction(int action_no);
+void chooseDisplayOperation();
+
+int getAction()
+{
+    int key = getchar();
+    while (getchar() != '\n')
+        ;
+    return key;
+}
+
+char quit_flag = 0;
 const account_t account = {0, "", "", "", "", "", 0.0, 0.0, 0.0};
-account_t sample = {0,          "PL611090101400000711981287",    "4401401359", "Jan",
-                    "Kowalski", "ul. Polna 11, 00-111 Warszawa", 1000.0,       0.0,
-                    0.0};
+const account_t sample = {1,
+                          "PL611090101400000071211287",
+                          "12345678901",
+                          "Jan",
+                          "Kowalski",
+                          "ul. Kowalska 1",
+                          1000.0,
+                          0.0,
+                          0.0};
 
 int main(int argc, char *argv[])
 {
-    FILE *write_f = fopen(DATA_FILE, "wb");
-    if (write_f == NULL)
+    while (1)
     {
-        printf("Error opening file!\n");
-        return 1;
+        chooseAction();
+        if (quit_flag)
+        {
+            break;
+        }
     }
-    fwrite(&sample, sizeof(account_t), 1, write_f);
-    fclose(write_f);
-    for (size_t i = 0; i < 2; i++)
-    {
-        createAccount();
-    }
-
-    FILE *read_f = fopen(DATA_FILE, "rb");
-    if (read_f == NULL)
-    {
-        printf("Error opening file!\n");
-        return 1;
-    }
-    while (fread(&account, sizeof(account_t), 1, read_f))
-    {
-        printf("Account number: %s\n", account.account_number);
-        printf("PESEL: %s\n", account.pesel_number);
-        printf("First name: %s\n", account.first_name);
-        printf("Last name: %s\n", account.last_name);
-        printf("Address: %s\n", account.address);
-        printf("Balance: %.2f\n", account.balance);
-        printf("Loan: %.2f\n", account.bank_loan);
-        printf("Interest: %.2f\n", account.interest);
-    }
-    fclose(read_f);
 
     return 0;
 }
@@ -113,12 +113,13 @@ void transferMoney()
         waitingForQuit();
         return;
     }
-    double transfer = getDouble(CASH_MIN, CASH_MAX);
+    double transfer = getDouble(CASH_MIN, CASH_MAX, "transfer");
     if (0 >= (source.balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
         (destination.balance + transfer) >= CASH_MAX)
     {
         errno = ERANGE;
         printERANGE();
+        return;
     }
     else
     {
@@ -138,11 +139,13 @@ void makeDeposit()
         waitingForQuit();
         return;
     }
-    double deposit_amount = getDouble(CASH_MIN, CASH_MAX);
-    if (deposit_amount >= CASH_MAX || deposit_amount < 0 || (deposit_acc.balance + deposit_amount) >= CASH_MAX)
+    double deposit_amount = getDouble(CASH_MIN, CASH_MAX, "deposit");
+    if (deposit_amount >= CASH_MAX || deposit_amount < 0 ||
+        (deposit_acc.balance + deposit_amount) >= CASH_MAX)
     {
         errno = ERANGE;
         printERANGE();
+        return;
     }
     else
     {
@@ -150,7 +153,6 @@ void makeDeposit()
         printSuccess();
     }
     updateAccount(deposit_acc);
-
 }
 void makeWithdrawal()
 {
@@ -162,11 +164,13 @@ void makeWithdrawal()
         waitingForQuit();
         return;
     }
-    double withdrawal_amount = getDouble(CASH_MIN, CASH_MAX);
-    if (withdrawal_amount >= CASH_MAX || withdrawal_amount < 0 || 0 >= (withdrawal_acc.balance - withdrawal_amount))
+    double withdrawal_amount = getDouble(CASH_MIN, CASH_MAX, "withdraw");
+    if (withdrawal_amount >= CASH_MAX || withdrawal_amount < 0 ||
+        0 >= (withdrawal_acc.balance - withdrawal_amount))
     {
         errno = ERANGE;
         printERANGE();
+        return;
     }
     else
     {
@@ -174,6 +178,57 @@ void makeWithdrawal()
         printSuccess();
     }
     updateAccount(withdrawal_acc);
+}
+void takeLoan()
+{
+    bool found = false;
+    account_t loan_acc = findAccount("", &found);
+    if (!found)
+    {
+        printf("Account was not found\n");
+        waitingForQuit();
+        return;
+    }
+    double loan = getDouble(CASH_MIN, CASH_MAX, "loan");
+    if ((loan_acc.balance + loan) >= CASH_MAX || loan >= CASH_MAX || loan <= 0)
+    {
+        errno = ERANGE;
+        printERANGE();
+        return;
+    }
+    else
+    {
+        loan_acc.balance += loan;
+        loan_acc.interest = (1 + BANK_INTEREST) * loan / MONTHS_OF_PAYMENT;
+        loan_acc.bank_loan += loan_acc.interest * MONTHS_OF_PAYMENT;
+        printSuccess();
+    }
+    updateAccount(loan_acc);
+}
+void payDebt()
+{
+    bool found = false;
+    account_t debt_acc = findAccount("", &found);
+    if (!found)
+    {
+        printf("Account was not found\n");
+        waitingForQuit();
+        return;
+    }
+    if (0 >= (debt_acc.balance - debt_acc.interest) || debt_acc.bank_loan == 0)
+    {
+        errno = ERANGE;
+        printERANGE();
+    }
+    else
+    {
+        debt_acc.balance -=
+            (debt_acc.bank_loan >= debt_acc.interest) ? debt_acc.interest : debt_acc.bank_loan;
+        debt_acc.bank_loan -=
+            (debt_acc.bank_loan >= debt_acc.interest) ? debt_acc.interest : debt_acc.bank_loan;
+        printSuccess();
+    }
+    updateAccount(debt_acc);
 }
 void updateAccount(account_t updated)
 {
@@ -228,16 +283,16 @@ void getBalance(account_t *new)
 {
     system("clear");
     printf("Enter balance: ");
-    new->balance = getDouble(CASH_MIN, CASH_MAX);
+    new->balance = getDouble(CASH_MIN, CASH_MAX, "current balance");
 }
 void getLoanInfo(account_t *new)
 {
     system("clear");
     printf("Enter loan amount: ");
-    new->bank_loan = getDouble(CASH_MIN, CASH_MAX);
+    new->bank_loan = getDouble(CASH_MIN, CASH_MAX, "current loan");
     system("clear");
     printf("Enter interest rate: ");
-    new->interest = getDouble(CASH_MIN, MAX_INTERESET);
+    new->interest = getDouble(CASH_MIN, MAX_INTERESET, "current interest");
 }
 void generateIBAN(account_t *new)
 {
@@ -313,4 +368,93 @@ void createAccount()
     }
     fwrite(&new, sizeof(account_t), 1, append_file);
     fclose(append_file);
+}
+void chooseAction()
+{
+    printActions();
+    int key = getAction();
+    switch (key)
+    {
+    case '1':
+        chooseModifyingOperation();
+        break;
+    case '2':
+        chooseDisplayOperation();
+        break;
+    case '3':
+        printHelpMenu();
+        break;
+    case '4':
+        quit_flag = 1;
+        break;
+    default:
+        break;
+    }
+}
+void chooseModifyingOperation()
+{
+    void (*functionPointer)(void);
+    printModifyingOptions();
+    int key = getAction();
+    switch (key)
+    {
+    case '1':
+        functionPointer = &createAccount;
+        break;
+    case '2':
+        functionPointer = &makeDeposit;
+        break;
+    case '3':
+        functionPointer = &makeWithdrawal;
+        break;
+    case '4':
+        functionPointer = &transferMoney;
+        break;
+    case '5':
+        functionPointer = &takeLoan;
+        break;
+    case '6':
+        functionPointer = &payDebt;
+        break;
+    default:
+        printf("Invalid operation\n");
+        return;
+    }
+    if (confimationOfAction(key - '0') && key != -1)
+    {
+        (*functionPointer)();
+    }
+}
+bool confimationOfAction(int action_no)
+{
+    system("clear");
+    printf("Do you want to performs this action number %d?\nPress Y/y if yes, otherwise press "
+           "anything else\n",
+           action_no);
+    int action = getchar();
+    while (getchar() != '\n')
+        ;
+
+    return (action == 'y' || action == 'Y');
+}
+void chooseDisplayOperation()
+{
+    void (*functionPointer)(void);
+    system("clear");
+    printDisplayOptions();
+    int key = getAction();
+
+    switch (key)
+    {
+    case '1':
+        //functionPointer = &printAllList;
+        break;
+    case '2':
+        //functionPointer = &searchList;
+        break;
+    default:
+        printf("Invalid operation\n");
+        return;
+    }
+    (*functionPointer)();
 }

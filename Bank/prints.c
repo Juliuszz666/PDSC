@@ -85,12 +85,14 @@ void getString(char *str, int bufsiz)
     }
     str[strcspn(str, "\n")] = '\0';
 }
-double getDouble(double min, double max)
+double getDouble(double min, double max, const char *msg)
 {
     double value;
     char buffer[CHARBUFFER];
     do
     {
+        system("clear");
+        printf("Enter value of %s: ", msg);
         getString(buffer, CHARBUFFER);
         value = strtod(buffer, NULL);
         if (value <= min || value > max)
