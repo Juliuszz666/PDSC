@@ -20,6 +20,10 @@ void getLoanInfo(account_t *new);
 void generateIBAN(account_t *new);
 bool isIBANoverlapping(IBAN check_val);
 
+void printAllList();
+void searchList();
+void printAccount(account_t account);
+
 void createAccount();
 void makeDeposit();
 void makeWithdrawal();
@@ -30,11 +34,22 @@ void payDebt();
 account_t findAccount(const char *msg, bool *found);
 void updateTransfer(account_t source, account_t destination);
 void updateAccount(account_t updated);
+void getSearchKey(char *search_key, short len);
 
 void chooseAction();
 void chooseModifyingOperation();
 bool confimationOfAction(int action_no);
 void chooseDisplayOperation();
+
+bool findName(account_t ref, Fixed_string key);
+bool findSurname(account_t ref, Fixed_string key);
+bool findAddress(account_t ref, Fixed_string key);
+bool findPESEL(account_t ref, Fixed_string key);
+bool findAccountNumber(account_t ref, Fixed_string key);
+
+void printAllList();
+
+void printAccounts(Fixed_string, bool (*condition)(account_t ref, Fixed_string key));
 
 int getAction()
 {
@@ -45,16 +60,6 @@ int getAction()
 }
 
 char quit_flag = 0;
-const account_t account = {0, "", "", "", "", "", 0.0, 0.0, 0.0};
-const account_t sample = {1,
-                          "PL611090101400000071211287",
-                          "12345678901",
-                          "Jan",
-                          "Kowalski",
-                          "ul. Kowalska 1",
-                          1000.0,
-                          0.0,
-                          0.0};
 
 int main(int argc, char *argv[])
 {
@@ -69,6 +74,124 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+void printLine()
+{
+    for (int i = 0; i < LINE_LENGTH; i++)
+    {
+        printf("-");
+    }
+    printf("\n");
+}
+
+void printAccount(account_t acc)
+{
+    printf("| %*.*u | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*f | %-*.*f | %-*.*f |\n",
+           ID_LEN, ID_LEN, acc.id, IBAN_LENGTH, IBAN_LENGTH, acc.account_number, CHARBUFFER,
+           CHARBUFFER, acc.first_name, CHARBUFFER, CHARBUFFER, acc.last_name, ADDRBUFFER,
+           ADDRBUFFER, acc.address, PESEL_LENGTH, PESEL_LENGTH, acc.pesel_number, BALANCE_SIZE_C,
+           PRECISION, acc.balance, LOAN_SIZE_C, PRECISION, acc.bank_loan, INTERESET_SIZE_C,
+           PRECISION, acc.interest);
+    printLine();
+}
+bool findName(account_t ref, Fixed_string key)
+{
+    return strcmp(ref.first_name, key) == 0;
+}
+bool findSurname(account_t ref, Fixed_string key)
+{
+    return strcmp(ref.last_name, key) == 0;
+}
+bool findAddress(account_t ref, Fixed_string key)
+{
+    return strcmp(ref.address, key) == 0;
+}
+bool findPESEL(account_t ref, Fixed_string key)
+{
+    return strcmp(ref.pesel_number, key) == 0;
+}
+bool findAccountNumber(account_t ref, Fixed_string key)
+{
+    return strcmp(ref.account_number, key) == 0;
+}
+void printAllList()
+{
+    printAccounts(NULL, NULL);
+}
+void getSearchKey(char *search_key, short len)
+{
+    system("clear");
+    printf("Enter search key: ");
+    getString(search_key, len);
+}
+void searchList()
+{
+    printSearchOptions();
+    bool (*searchFun)(account_t ref, Fixed_string key);
+    short len = CHARBUFFER;
+    Fixed_string search_type;
+    Address search_key;
+    getString(search_type, CHARBUFFER);
+    if (strcmp(search_type, "acc num") == 0)
+    {
+        searchFun = &findAccountNumber;
+        len = IBAN_LENGTH + 1;
+    }
+    else if (strcmp(search_type, "fname") == 0)
+    {
+        searchFun = &findName;
+    }
+    else if (strcmp(search_type, "lname") == 0)
+    {
+        searchFun = &findSurname;
+    }
+    else if (strcmp(search_type, "addr") == 0)
+    {
+        searchFun = &findAddress;
+        len = ADDRBUFFER + 1;
+    }
+    else if (strcmp(search_type, "pesel") == 0)
+    {
+        searchFun = &findPESEL;
+        len = PESEL_LENGTH + 1;
+    }
+    else
+    {
+        printf("Invalid search type\n");
+        waitingForQuit();
+        return;
+    }
+    getSearchKey(search_key, len);
+    printAccounts(search_key, searchFun);
+}
+
+void printAccounts(Fixed_string key, bool (*condition)(account_t ref, Fixed_string key))
+{
+    FILE *print_f = fopen(DATA_FILE, "rb");
+    if (print_f == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    account_t print;
+    system("clear");
+    printLine();
+    printf("| %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s |\n",
+           ID_LEN, ID_LEN, "ID", IBAN_LENGTH, IBAN_LENGTH, "Account Number", CHARBUFFER, CHARBUFFER,
+           "First Name", CHARBUFFER, CHARBUFFER, "Last Name", ADDRBUFFER, ADDRBUFFER, "Address",
+           PESEL_LENGTH, PESEL_LENGTH, "PESEL", BALANCE_SIZE_C, BALANCE_SIZE_C, "Balance",
+           LOAN_SIZE_C, LOAN_SIZE_C, "Bank Loan", INTERESET_SIZE_C, INTERESET_SIZE_C, "Interest");
+    printLine();
+    while (fread(&print, sizeof(account_t), 1, print_f))
+    {
+        if (condition == NULL || (condition != NULL && condition(print, key)))
+        {
+            printAccount(print);
+        }
+    }
+    fclose(print_f);
+    waitingForQuit();
+}
+
 account_t findAccount(const char *msg, bool *found)
 {
     account_t retval;
@@ -86,7 +209,7 @@ account_t findAccount(const char *msg, bool *found)
     if (search_f == NULL)
     {
         printf("Error opening file!\n");
-        return account;
+        return retval;
     }
     while (fread(&retval, sizeof(account_t), 1, search_f))
     {
@@ -99,7 +222,7 @@ account_t findAccount(const char *msg, bool *found)
     }
     fclose(search_f);
     *found = false;
-    return account;
+    return retval;
 }
 void transferMoney()
 {
@@ -190,7 +313,7 @@ void takeLoan()
         return;
     }
     double loan = getDouble(CASH_MIN, CASH_MAX, "loan");
-    if ((loan_acc.balance + loan) >= CASH_MAX || loan >= CASH_MAX || loan <= 0)
+    if ((loan_acc.balance + loan) >= CASH_MAX || loan >= LOAN_MAX || loan <= 0)
     {
         errno = ERANGE;
         printERANGE();
@@ -227,6 +350,10 @@ void payDebt()
         debt_acc.bank_loan -=
             (debt_acc.bank_loan >= debt_acc.interest) ? debt_acc.interest : debt_acc.bank_loan;
         printSuccess();
+    }
+    if (debt_acc.bank_loan == 0)
+    {
+        debt_acc.interest = 0;
     }
     updateAccount(debt_acc);
 }
@@ -282,17 +409,13 @@ void getLocation(account_t *new)
 void getBalance(account_t *new)
 {
     system("clear");
-    printf("Enter balance: ");
     new->balance = getDouble(CASH_MIN, CASH_MAX, "current balance");
 }
 void getLoanInfo(account_t *new)
 {
     system("clear");
-    printf("Enter loan amount: ");
     new->bank_loan = getDouble(CASH_MIN, CASH_MAX, "current loan");
-    system("clear");
-    printf("Enter interest rate: ");
-    new->interest = getDouble(CASH_MIN, MAX_INTERESET, "current interest");
+    new->interest = (1 + BANK_INTEREST) * new->bank_loan / MONTHS_OF_PAYMENT;
 }
 void generateIBAN(account_t *new)
 {
@@ -447,10 +570,10 @@ void chooseDisplayOperation()
     switch (key)
     {
     case '1':
-        //functionPointer = &printAllList;
+        functionPointer = &printAllList;
         break;
     case '2':
-        //functionPointer = &searchList;
+        functionPointer = &searchList;
         break;
     default:
         printf("Invalid operation\n");

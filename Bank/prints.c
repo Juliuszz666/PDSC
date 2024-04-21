@@ -41,7 +41,7 @@ void printERANGE()
 void printSuccess()
 {
     system("clear");
-    printf("Operation sucessful\nPress q/Q to continue\n");
+    printf("Operation sucessful\n");
     waitingForQuit();
 }
 void waitingForQuit()
