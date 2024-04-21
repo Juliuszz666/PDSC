@@ -62,7 +62,6 @@ void printSearchOptions()
     printf("lname\t-\tlast name\n");
     printf("addr\t-\taddress\n");
     printf("pesel\t-\tPESEL number\n");
-    printf("id\t-\taccount id\n");
 }
 void printHelpMenu()
 {

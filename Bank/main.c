@@ -95,23 +95,23 @@ void printAccount(account_t acc)
 }
 bool findName(account_t ref, Fixed_string key)
 {
-    return strcmp(ref.first_name, key) == 0;
+    return strstr(ref.first_name, key) != NULL;
 }
 bool findSurname(account_t ref, Fixed_string key)
 {
-    return strcmp(ref.last_name, key) == 0;
+    return strstr(ref.last_name, key) != NULL;
 }
 bool findAddress(account_t ref, Fixed_string key)
 {
-    return strcmp(ref.address, key) == 0;
+    return strstr(ref.address, key) != NULL;
 }
 bool findPESEL(account_t ref, Fixed_string key)
 {
-    return strcmp(ref.pesel_number, key) == 0;
+    return strstr(ref.pesel_number, key) != NULL;
 }
 bool findAccountNumber(account_t ref, Fixed_string key)
 {
-    return strcmp(ref.account_number, key) == 0;
+    return strstr(ref.account_number, key) != NULL;
 }
 void printAllList()
 {
