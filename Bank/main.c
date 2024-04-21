@@ -1,400 +1,247 @@
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
-#include <float.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <time.h>
 
-#include "list.h"
 #include "prints.h"
+#include "typedefs.h"
 
-#define COUNTRY "PL69"
-#define BANK_CODE "211569420"
-#define INTEREST_RATE 0.069
-#define MOHTNS_OF_PAYMENT 180
+#define DATA_FILE "clients.dat"
 
-void loadData();
-void saveData();
-
-void chooseAction();
-void chooseModifyingOperation();
-void chooseDisplayOperation();
-void generateIBAN(IBAN, node *);
-bool isIBANoverlapping(node *, IBAN);
-bool confimationOfAction(int);
-
-void getName(Fixed_string name, Fixed_string surname);
-void getPESEL(PESEL pesel);
-void getLocation(Address location);
-double getMoneyValue(const char *msg);
-node *findAccount(const char *msg);
-
+void getPESEL(account_t *new);
+void getName(account_t *new);
+void getLocation(account_t *new);
+void getBalance(account_t *new);
+void getLoanInfo(account_t *new);
+void generateIBAN(account_t *new);
+bool isIBANoverlapping(IBAN check_val);
 void createAccount();
+
+account_t findAccount(const char* msg, bool* found);
 void makeDeposit();
 void makeWithdrawal();
 void transferMoney();
-void takeLoan();
-void payDebt();
+void updateTransfer(account_t source, account_t destination);
+void updateAccount(account_t updated);
 
-int getAction()
+const account_t account = {0, "", "", "", "", "", 0.0, 0.0, 0.0};
+account_t sample = {0,          "PL611090101400000711981287",    "4401401359", "Jan",
+                    "Kowalski", "ul. Polna 11, 00-111 Warszawa", 1000.0,       0.0,
+                    0.0};
+
+int main(int argc, char *argv[])
 {
-    int key = getchar();
-    while (getchar() != '\n')
-        ;
-    return key;
-}
-
-node *head = NULL;
-char quit_flag = 0;
-
-int main(int argc, char const *argv[])
-{
-    while (1)
+    FILE *write_f = fopen(DATA_FILE, "wb");
+    if (write_f == NULL)
     {
-        chooseAction();
-        if (quit_flag)
-        {
-            break;
-        }
+        printf("Error opening file!\n");
+        return 1;
     }
+    fwrite(&sample, sizeof(account_t), 1, write_f);
+    fclose(write_f);
+    for (size_t i = 0; i < 2; i++)
+    {
+        createAccount();
+    }
+
+    FILE *read_f = fopen(DATA_FILE, "rb");
+    if (read_f == NULL)
+    {
+        printf("Error opening file!\n");
+        return 1;
+    }
+    while (fread(&account, sizeof(account_t), 1, read_f))
+    {
+        printf("Account number: %s\n", account.account_number);
+        printf("PESEL: %s\n", account.pesel_number);
+        printf("First name: %s\n", account.first_name);
+        printf("Last name: %s\n", account.last_name);
+        printf("Address: %s\n", account.address);
+        printf("Balance: %.2f\n", account.balance);
+        printf("Loan: %.2f\n", account.bank_loan);
+        printf("Interest: %.2f\n", account.interest);
+    }
+    fclose(read_f);
 
     return 0;
 }
-void loadData()
+account_t findAccount(const char *msg, bool *found)
 {
-    FILE *file = fopen("data.txt", "r");
-    if (file == NULL)
+    account_t retval;
+    uint32_t search_by;
+    int check;
+    do
     {
-        printf("No data to load.\n");
-        return;
-    }
-    IBAN acc_num;
-    PESEL id_number;
-    Fixed_string first_name, surname;
-    Address address;
-    double balance_info[BALANCE_INFO_NO];
-    while (fscanf(file, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%lf|%lf|%lf\n", acc_num, first_name, surname,
-                  address, id_number, &balance_info[0], &balance_info[1], &balance_info[2]) != EOF)
-    {
-        node *newAccount = createNode(acc_num, first_name, surname, address, id_number,
-                                      balance_info[0], balance_info[1], balance_info[2]);
-        pushNode(&head, newAccount);
-    }
-    fclose(file);
-}
-void saveData()
-{
-    FILE *file = fopen("data.txt", "w");
-    if (file == NULL)
+        system("clear");
+        printf("Enter %s account id: ", msg);
+        check = scanf("%u", &search_by);
+        while (getchar() != '\n')
+            ;
+    } while (check != 1);
+    FILE *search_f = fopen(DATA_FILE, "rb");
+    if (search_f == NULL)
     {
         printf("Error opening file!\n");
+        return account;
+    }
+    while (fread(&retval, sizeof(account_t), 1, search_f))
+    {
+        if (retval.id == search_by)
+        {
+            fclose(search_f);
+            *found = true;
+            return retval;
+        }
+    }
+    fclose(search_f);
+    *found = false;
+    return account;
+}
+void transferMoney()
+{
+    bool source_found = false;
+    bool destination_found = false;
+    account_t source = findAccount("source ", &source_found);
+    account_t destination = findAccount("destination ", &destination_found);
+    if (!source_found || !destination_found)
+    {
+        printf("One of the accounts was not found\n");
+        waitingForQuit();
         return;
     }
-    node *temp = head;
-    while (temp != NULL)
+    double transfer = getDouble(CASH_MIN, CASH_MAX);
+    if (0 >= (source.balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
+        (destination.balance + transfer) >= CASH_MAX)
     {
-        fprintf(file, "%s|%s|%s|%s|%s|%.2lf|%.2lf|%.2lf\n", temp->account_number, temp->first_name,
-                temp->last_name, temp->address, temp->pesel_number, temp->balance, temp->bank_loan,
-                temp->interest);
-        temp = temp->next;
+        errno = ERANGE;
+        printERANGE();
     }
-    fclose(file);
-}
-void chooseAction()
-{
-    printActions();
-    int key = getAction();
-    switch (key)
+    else
     {
-    case '1':
-        chooseModifyingOperation();
-        break;
-    case '2':
-        chooseDisplayOperation();
-        break;
-    case '3':
-        printHelpMenu();
-        break;
-    case '4':
-        quit_flag = 1;
-        break;
-    default:
-        break;
+        source.balance -= transfer;
+        destination.balance += transfer;
+        printSuccess();
     }
+    updateTransfer(source, destination);
 }
-
-void chooseModifyingOperation()
+void makeDeposit()
 {
-    void (*functionPointer)(void);
-    printModifyingOptions();
-    int key = getAction();
-    switch (key)
+    bool found = false;
+    account_t deposit_acc = findAccount("", &found);
+    if (!found)
     {
-    case '1':
-        functionPointer = &createAccount;
-        break;
-    case '2':
-        functionPointer = &makeDeposit;
-        break;
-    case '3':
-        functionPointer = &makeWithdrawal;
-        break;
-    case '4':
-        functionPointer = &transferMoney;
-        break;
-    case '5':
-        functionPointer = &takeLoan;
-        break;
-    case '6':
-        functionPointer = &payDebt;
-        break;
-    default:
-        printf("Invalid operation\n");
+        printf("Account was not found\n");
+        waitingForQuit();
         return;
     }
-    if (confimationOfAction(key - '0') && key != -1)
+    double deposit_amount = getDouble(CASH_MIN, CASH_MAX);
+    if (deposit_amount >= CASH_MAX || deposit_amount < 0 || (deposit_acc.balance + deposit_amount) >= CASH_MAX)
     {
-        (*functionPointer)();
+        errno = ERANGE;
+        printERANGE();
     }
-}
-bool confimationOfAction(int action_no)
-{
-    system("clear");
-    printf("Do you want to performs this action number %d?\nPress Y/y if yes, otherwise press "
-           "anything else\n",
-           action_no);
-    int action = getchar();
-    while (getchar() != '\n')
-        ;
+    else
+    {
+        deposit_acc.balance += deposit_amount;
+        printSuccess();
+    }
+    updateAccount(deposit_acc);
 
-    return (action == 'y' || action == 'Y');
 }
-void createAccount()
+void makeWithdrawal()
 {
-    loadData();
-    IBAN acc_num;
-    PESEL id_number;
-    Fixed_string first_name, surname;
-    Address address;
-    generateIBAN(acc_num, head);
-    getPESEL(id_number);
-    getName(first_name, surname);
-    getLocation(address);
-    double balance_info[BALANCE_INFO_NO] = {0};
-    // getBalanceInfo(balance_info);
-    node *newAccount = createNode(acc_num, first_name, surname, address, id_number, balance_info[0],
-                                  balance_info[1], balance_info[2]);
-    pushNode(&head, newAccount);
-    saveData();
-    deleteList(&head);
+    bool found = false;
+    account_t withdrawal_acc = findAccount("", &found);
+    if (!found)
+    {
+        printf("Account was not found\n");
+        waitingForQuit();
+        return;
+    }
+    double withdrawal_amount = getDouble(CASH_MIN, CASH_MAX);
+    if (withdrawal_amount >= CASH_MAX || withdrawal_amount < 0 || 0 >= (withdrawal_acc.balance - withdrawal_amount))
+    {
+        errno = ERANGE;
+        printERANGE();
+    }
+    else
+    {
+        withdrawal_acc.balance -= withdrawal_amount;
+        printSuccess();
+    }
+    updateAccount(withdrawal_acc);
 }
-void getPESEL(PESEL pesel)
+void updateAccount(account_t updated)
 {
-    Fixed_string buffer;
+    FILE *update_f = fopen(DATA_FILE, "rb+");
+    if (update_f == NULL)
+    {
+        perror("Error opening file!\n");
+        return;
+    }
+    if (fseek(update_f, sizeof(account_t) * (updated.id - 1), SEEK_SET) != 0)
+    {
+        perror("Error seeking file!\n");
+        fclose(update_f);
+        return;
+    }
+    fwrite(&updated, sizeof(account_t), 1, update_f);
+    fclose(update_f);
+}
+void updateTransfer(account_t source, account_t destination)
+{
+    updateAccount(source);
+    updateAccount(destination);
+}
+
+void getPESEL(account_t *new)
+{
+    PESEL buffer;
     do
     {
         system("clear");
         printf("Enter your PESEL: ");
         getString(buffer, PESEL_LENGTH + 1);
     } while (strlen(buffer) != PESEL_LENGTH);
-    strcpy(pesel, buffer);
+    strcpy(new->pesel_number, buffer);
 }
-void getName(Fixed_string first_name, Fixed_string surname)
+void getName(account_t *new)
 {
     system("clear");
     printf("Enter first name: ");
-    getString(first_name, CHARBUFFER);
+    getString(new->first_name, CHARBUFFER);
     system("clear");
     printf("Enter surname: ");
-    getString(surname, CHARBUFFER);
+    getString(new->last_name, CHARBUFFER);
 }
-void getLocation(Address location)
+void getLocation(account_t *new)
 {
     system("clear");
-    printf("Enter your address: ");
-    getString(location, ADDRBUFFER);
+    printf("Enter address: ");
+    getString(new->address, ADDRBUFFER);
 }
-bool compareIBAN(void *key, node *ref)
-{
-    return (memcmp(key, ref->account_number, IBAN_LENGTH));
-}
-node *findAccount(const char *msg)
+void getBalance(account_t *new)
 {
     system("clear");
-    printf("Provide %saccount number: ", msg);
-    IBAN action_account;
-    getString(action_account, IBAN_LENGTH + 1);
-    return searchForNode(&head, action_account, compareIBAN);
+    printf("Enter balance: ");
+    new->balance = getDouble(CASH_MIN, CASH_MAX);
 }
-double getMoneyValue(const char *msg)
+void getLoanInfo(account_t *new)
 {
     system("clear");
-    printf("Provide amount you want to %s\n", msg);
-    Fixed_string buffer;
-    getString(buffer, CHARBUFFER);
-    return strtod(buffer, NULL);
-}
-void makeDeposit()
-{
-    loadData();
-    node *action_node = findAccount("");
-    if (action_node == NULL)
-    {
-        printf("Invalid account number!\n");
-        goto invalid_acc;
-    }
-    double deposit = getMoneyValue("deposit");
-    if (CASH_MAX <= (deposit + action_node->balance) || deposit <= 0)
-    {
-        errno = ERANGE;
-        printERANGE();
-    }
-    else
-    {
-        action_node->balance += deposit;
-        printSuccess();
-    }
-invalid_acc:
-    saveData();
-    deleteList(&head);
-}
-void makeWithdrawal()
-{
-    loadData();
-    node *action_node = findAccount("");
-    if (action_node == NULL)
-    {
-        printf("Invalid account number!\n");
-        waitingForQuit();
-        goto invalid_acc;
-    }
-    double withdrawal = getMoneyValue("withdraw");
-    if (0 >= (action_node->balance - withdrawal) || withdrawal >= CASH_MAX || withdrawal <= 0)
-    {
-        errno = ERANGE;
-        printERANGE();
-    }
-    else
-    {
-        action_node->balance -= withdrawal;
-        printSuccess();
-    }
-invalid_acc:
-    saveData();
-    deleteList(&head);
-}
-void transferMoney()
-{
-    loadData();
-    node *src_account = findAccount("source ");
-    while (getchar() != '\n')
-        ;
-    node *dst_account = findAccount("destination ");
-    if (src_account == NULL || dst_account == NULL)
-    {
-        printf("Invalid account number!\n");
-        waitingForQuit();
-        goto invalid_acc;
-    }
-    double transfer = getMoneyValue("transfer");
-    if (0 >= (src_account->balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
-        (dst_account->balance + transfer) >= CASH_MAX)
-    {
-        errno = ERANGE;
-        printERANGE();
-    }
-    else
-    {
-        src_account->balance -= transfer;
-        dst_account->balance += transfer;
-        printSuccess();
-    }
-invalid_acc:
-    saveData();
-    deleteList(&head);
-}
-void takeLoan()
-{
-    loadData();
-    node *action_node = findAccount("");
-    if (action_node == NULL)
-    {
-        printf("Invalid account number!\n");
-        waitingForQuit();
-        goto invalid_acc;
-    }
-    double loan = getMoneyValue("take a loan");
-    if ((action_node->balance + loan) >= CASH_MAX || loan >= CASH_MAX || loan <= 0)
-    {
-        errno = ERANGE;
-        printERANGE();
-    }
-    else
-    {
-        action_node->balance += loan;
-        action_node->interest = (1 + INTEREST_RATE) * loan / MOHTNS_OF_PAYMENT;
-        action_node->bank_loan += action_node->interest * MOHTNS_OF_PAYMENT;
-        printSuccess();
-    }
-invalid_acc:
-    saveData();
-    deleteList(&head);
-}
-void payDebt()
-{
-    loadData();
-    node *action_node = findAccount("");
-    if (action_node == NULL)
-    {
-        printf("Invalid account number!\n");
-        waitingForQuit();
-        goto invalid_acc;
-    }
-    if (0 >= (action_node->balance - action_node->interest) || action_node->bank_loan == 0)
-    {
-        errno = ERANGE;
-        printERANGE();
-    }
-    else
-    {
-        action_node->balance -= (action_node->bank_loan >= action_node->interest)
-                                    ? action_node->interest
-                                    : action_node->bank_loan;
-        action_node->bank_loan -= (action_node->bank_loan >= action_node->interest)
-                                      ? action_node->interest
-                                      : action_node->bank_loan;
-        printSuccess();
-    }
-invalid_acc:
-    saveData();
-    deleteList(&head);
-}
-void chooseDisplayOperation()
-{
-    void (*functionPointer)(node *);
+    printf("Enter loan amount: ");
+    new->bank_loan = getDouble(CASH_MIN, CASH_MAX);
     system("clear");
-    printDisplayOptions();
-    int key = getAction();
-
-    switch (key)
-    {
-    case '1':
-        functionPointer = &printAllList;
-        break;
-    case '2':
-        functionPointer = &searchList;
-        break;
-    default:
-        printf("Invalid operation\n");
-        return;
-    }
-    loadData();
-    (*functionPointer)(head);
-    deleteList(&head);
+    printf("Enter interest rate: ");
+    new->interest = getDouble(CASH_MIN, MAX_INTERESET);
 }
-void generateIBAN(IBAN to_be_generated, node *head)
+void generateIBAN(account_t *new)
 {
+    IBAN to_be_generated;
     do
     {
         srand(time(NULL));
@@ -410,18 +257,60 @@ void generateIBAN(IBAN to_be_generated, node *head)
             to_be_generated[i] = rand() % 10 + '0';
         }
         to_be_generated[IBAN_LENGTH] = '\0';
-    } while (isIBANoverlapping(head, to_be_generated));
+    } while (isIBANoverlapping(to_be_generated));
+    strcpy(new->account_number, to_be_generated);
 }
-bool isIBANoverlapping(node *head, IBAN check_val)
+bool isIBANoverlapping(IBAN check_val)
 {
-    node *temp = head;
-    while (temp != NULL)
+    FILE *check_f = fopen(DATA_FILE, "rb");
+    if (check_f == NULL)
     {
-        if (temp->account_number == check_val)
+        printf("Error opening file!\n");
+        return false;
+    }
+    account_t check;
+    while (fread(&check, sizeof(account_t), 1, check_f))
+    {
+        if (strcmp(check.account_number, check_val) == 0)
         {
+            fclose(check_f);
             return true;
         }
-        temp = temp->next;
     }
+    fclose(check_f);
     return false;
+}
+uint32_t getLastID()
+{
+    FILE *seek_file = fopen(DATA_FILE, "rb");
+    if (seek_file == NULL)
+    {
+        printf("Error opening file!\n");
+        return 0;
+    }
+    account_t last;
+    fseek(seek_file, -sizeof(account_t), SEEK_END);
+    fread(&last, sizeof(account_t), 1, seek_file);
+    fclose(seek_file);
+    return last.id;
+}
+void createAccount()
+{
+    account_t new;
+    new.id = getLastID() + 1;
+    strcpy(new.account_number, "PL611090101400000071211287");
+    generateIBAN(&new);
+    getPESEL(&new);
+    getName(&new);
+    getLocation(&new);
+    getBalance(&new);
+    getLoanInfo(&new);
+    FILE *append_file = fopen(DATA_FILE, "ab");
+    if (append_file == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    fwrite(&new, sizeof(account_t), 1, append_file);
+    fclose(append_file);
 }

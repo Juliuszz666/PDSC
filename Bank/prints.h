@@ -12,5 +12,6 @@ void printSuccess();
 void printSearchOptions();
 void printHelpMenu();
 void getString(char *str, int bufsiz);
+double getDouble(double min, double max);
 
 #endif // __PRINTS_H__
