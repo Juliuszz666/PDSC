@@ -322,7 +322,7 @@ void takeLoan()
     else
     {
         loan_acc.balance += loan;
-        loan_acc.interest = (1 + BANK_INTEREST) * loan / MONTHS_OF_PAYMENT;
+        loan_acc.interest = (1 + BANK_INTEREST) * (loan_acc.bank_loan + loan) / MONTHS_OF_PAYMENT;
         loan_acc.bank_loan += loan_acc.interest * MONTHS_OF_PAYMENT;
         printSuccess();
     }
@@ -476,7 +476,6 @@ void createAccount()
 {
     account_t new;
     new.id = getLastID() + 1;
-    strcpy(new.account_number, "PL611090101400000071211287");
     generateIBAN(&new);
     getPESEL(&new);
     getName(&new);
