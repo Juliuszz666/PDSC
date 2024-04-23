@@ -5,6 +5,8 @@
 
 #pragma pack(1)
 
+#define DATA_FILE "clients.dat"
+
 #define IBAN_LENGTH 26
 #define PESEL_LENGTH 11
 

@@ -1,7 +1,7 @@
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 void freeText(char **text, int no_of_lines);
 void printReversedWords(char **text, int no_of_lines);

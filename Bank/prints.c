@@ -101,3 +101,52 @@ double getDouble(double min, double max, const char *msg)
     } while (value <= min || value > max);
     return value;
 }
+void printAccount(account_t acc)
+{
+    printf("| %*.*u | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*f | %-*.*f | %-*.*f |\n",
+           ID_LEN, ID_LEN, acc.id, IBAN_LENGTH, IBAN_LENGTH, acc.account_number, CHARBUFFER,
+           CHARBUFFER, acc.first_name, CHARBUFFER, CHARBUFFER, acc.last_name, ADDRBUFFER,
+           ADDRBUFFER, acc.address, PESEL_LENGTH, PESEL_LENGTH, acc.pesel_number, BALANCE_SIZE_C,
+           PRECISION, acc.balance, LOAN_SIZE_C, PRECISION, acc.bank_loan, INTERESET_SIZE_C,
+           PRECISION, acc.interest);
+    printLine();
+}
+void printLine()
+{
+    for (int i = 0; i < LINE_LENGTH; i++)
+    {
+        printf("-");
+    }
+    printf("\n");
+}
+void printAllList()
+{
+    printAccounts(NULL, NULL);
+}
+void printAccounts(Fixed_string key, bool (*condition)(account_t ref, Fixed_string key))
+{
+    FILE *print_f = fopen(DATA_FILE, "rb");
+    if (print_f == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    account_t print;
+    system("clear");
+    printLine();
+    printf("| %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s |\n",
+           ID_LEN, ID_LEN, "ID", IBAN_LENGTH, IBAN_LENGTH, "Account Number", CHARBUFFER, CHARBUFFER,
+           "First Name", CHARBUFFER, CHARBUFFER, "Last Name", ADDRBUFFER, ADDRBUFFER, "Address",
+           PESEL_LENGTH, PESEL_LENGTH, "PESEL", BALANCE_SIZE_C, BALANCE_SIZE_C, "Balance",
+           LOAN_SIZE_C, LOAN_SIZE_C, "Bank Loan", INTERESET_SIZE_C, INTERESET_SIZE_C, "Interest");
+    printLine();
+    while (fread(&print, sizeof(account_t), 1, print_f))
+    {
+        if (condition == NULL || (condition != NULL && condition(print, key)))
+        {
+            printAccount(print);
+        }
+    }
+    fclose(print_f);
+    waitingForQuit();
+}

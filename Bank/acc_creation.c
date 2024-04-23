@@ -1,0 +1,119 @@
+#include "acc_creation.h"
+#include "prints.h"
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+void getPESEL(account_t *new)
+{
+    PESEL buffer;
+    do
+    {
+        system("clear");
+        printf("Enter your PESEL: ");
+        getString(buffer, PESEL_LENGTH + 1);
+    } while (strlen(buffer) != PESEL_LENGTH);
+    strcpy(new->pesel_number, buffer);
+}
+void getName(account_t *new)
+{
+    system("clear");
+    printf("Enter first name: ");
+    getString(new->first_name, CHARBUFFER);
+    system("clear");
+    printf("Enter surname: ");
+    getString(new->last_name, CHARBUFFER);
+}
+void getLocation(account_t *new)
+{
+    system("clear");
+    printf("Enter address: ");
+    getString(new->address, ADDRBUFFER);
+}
+void getBalance(account_t *new)
+{
+    system("clear");
+    new->balance = getDouble(CASH_MIN, CASH_MAX, "current balance");
+}
+void getLoanInfo(account_t *new)
+{
+    system("clear");
+    new->bank_loan = getDouble(CASH_MIN, CASH_MAX, "current loan");
+    new->interest = (1 + BANK_INTEREST) * new->bank_loan / MONTHS_OF_PAYMENT;
+}
+void generateIBAN(account_t *new)
+{
+    IBAN to_be_generated;
+    do
+    {
+        srand(time(NULL));
+        int iban_ptr = 0;
+        assert((iban_ptr + strlen(COUNTRY)) < IBAN_LENGTH);
+        strcpy(to_be_generated, COUNTRY);
+        iban_ptr += strlen(COUNTRY);
+        assert((iban_ptr + strlen(BANK_CODE)) < IBAN_LENGTH);
+        strcpy(to_be_generated + iban_ptr, BANK_CODE);
+        iban_ptr += strlen(BANK_CODE);
+        for (size_t i = iban_ptr; i < IBAN_LENGTH; i++)
+        {
+            to_be_generated[i] = rand() % 10 + '0';
+        }
+        to_be_generated[IBAN_LENGTH] = '\0';
+    } while (isIBANoverlapping(to_be_generated));
+    strcpy(new->account_number, to_be_generated);
+}
+bool isIBANoverlapping(IBAN check_val)
+{
+    FILE *check_f = fopen(DATA_FILE, "rb");
+    if (check_f == NULL)
+    {
+        printf("Error opening file!\n");
+        return false;
+    }
+    account_t check;
+    while (fread(&check, sizeof(account_t), 1, check_f))
+    {
+        if (strcmp(check.account_number, check_val) == 0)
+        {
+            fclose(check_f);
+            return true;
+        }
+    }
+    fclose(check_f);
+    return false;
+}
+uint32_t getLastID()
+{
+    FILE *seek_file = fopen(DATA_FILE, "rb");
+    if (seek_file == NULL)
+    {
+        printf("Error opening file!\n");
+        return 0;
+    }
+    account_t last;
+    fseek(seek_file, -sizeof(account_t), SEEK_END);
+    fread(&last, sizeof(account_t), 1, seek_file);
+    fclose(seek_file);
+    return last.id;
+}
+void createAccount()
+{
+    account_t new;
+    new.id = getLastID() + 1;
+    generateIBAN(&new);
+    getPESEL(&new);
+    getName(&new);
+    getLocation(&new);
+    getBalance(&new);
+    getLoanInfo(&new);
+    FILE *append_file = fopen(DATA_FILE, "ab");
+    if (append_file == NULL)
+    {
+        printf("Error opening file!\n");
+        return;
+    }
+    fwrite(&new, sizeof(account_t), 1, append_file);
+    fclose(append_file);
+}
