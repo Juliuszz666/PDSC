@@ -1,5 +1,5 @@
 #include "search.h"
-#include "prints.h"
+#include "prompts.h"
 #include <stdlib.h>
 #include <string.h>
 

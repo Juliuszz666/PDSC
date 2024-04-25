@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-#include "prints.h"
+#include "prompts.h"
 #include "typedefs.h"
 
 void printActions()
@@ -84,6 +85,14 @@ void getString(char *str, int bufsiz)
     }
     str[strcspn(str, "\n")] = '\0';
 }
+bool checkDigits(char* string)
+{
+    for (size_t i = 0; i < strlen(string); i++)
+    {
+        if(!isdigit(string[i])) return false;
+    }
+    return true;
+}
 double getDouble(double min, double max, const char *msg)
 {
     double value;
@@ -94,11 +103,7 @@ double getDouble(double min, double max, const char *msg)
         printf("Enter value of %s: ", msg);
         getString(buffer, CHARBUFFER);
         value = strtod(buffer, NULL);
-        if (value <= min || value > max)
-        {
-            printf("Value out of range! Try again: ");
-        }
-    } while (value <= min || value > max);
+    } while (value <= min || value > max || !checkDigits(buffer));
     return value;
 }
 void printAccount(account_t acc)

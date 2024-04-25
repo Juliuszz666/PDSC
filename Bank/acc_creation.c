@@ -1,5 +1,5 @@
 #include "acc_creation.h"
-#include "prints.h"
+#include "prompts.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@ void getPESEL(account_t *new)
         system("clear");
         printf("Enter your PESEL: ");
         getString(buffer, PESEL_LENGTH + 1);
-    } while (strlen(buffer) != PESEL_LENGTH);
+    } while (strlen(buffer) != PESEL_LENGTH || !checkDigits(buffer));
     strcpy(new->pesel_number, buffer);
 }
 void getName(account_t *new)

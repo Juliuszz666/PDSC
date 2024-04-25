@@ -1,6 +1,6 @@
 #include "mod_actions.h"
 #include "file_actions.h"
-#include "prints.h"
+#include "prompts.h"
 #include "typedefs.h"
 #include <errno.h>
 #include <stdbool.h>

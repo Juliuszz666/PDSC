@@ -1,6 +1,6 @@
 all: main
 
-main: main.o prints.o search.o mod_actions.o acc_creation.o file_actions.o
+main: main.o prompts.o search.o mod_actions.o acc_creation.o file_actions.o
 	gcc -fsanitize=undefined -g $^ -o $@ -lm
 
 .c.o: 
@@ -8,7 +8,7 @@ main: main.o prints.o search.o mod_actions.o acc_creation.o file_actions.o
 
 main.o: main.c main.h
 
-prints.o: prints.c prints.h typedefs.h
+prints.o: prompts.c prompts.h typedefs.h
 
 search.o: search.c search.h typedefs.h
 

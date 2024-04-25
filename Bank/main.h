@@ -10,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "prints.h"
+#include "prompts.h"
 #include "typedefs.h"
 #include "mod_actions.h"
 #include "acc_creation.h"
