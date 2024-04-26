@@ -1,7 +1,7 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "prompts.h"
 #include "typedefs.h"
@@ -10,8 +10,8 @@ void printActions()
 {
     system("clear");
     printf("***\t\t\tChoose want you want to do\t\t\t***\n");
-    printf("***\t\t\t1.\tModify something\t\t\t***\n");
-    printf("***\t\t\t2.\tSee something\t\t\t\t***\n");
+    printf("***\t\t\t1.\tAccounts modyfications\t\t\t***\n");
+    printf("***\t\t\t2.\tAccounts listing\t\t\t***\n");
     printf("***\t\t\t3.\tHelp\t\t\t\t\t***\n");
     printf("***\t\t\t4.\tQuit program\t\t\t\t***\n");
 }
@@ -85,11 +85,12 @@ void getString(char *str, int bufsiz)
     }
     str[strcspn(str, "\n")] = '\0';
 }
-bool checkDigits(char* string)
+bool checkDigits(char *string)
 {
     for (size_t i = 0; i < strlen(string); i++)
     {
-        if(!isdigit(string[i])) return false;
+        if (!isdigit(string[i]))
+            return false;
     }
     return true;
 }
@@ -108,10 +109,9 @@ double getDouble(double min, double max, const char *msg)
 }
 void printAccount(account_t acc)
 {
-    printf("| %*.*u | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*f | %-*.*f | %-*.*f |\n",
-           ID_LEN, ID_LEN, acc.id, IBAN_LENGTH, IBAN_LENGTH, acc.account_number, CHARBUFFER,
-           CHARBUFFER, acc.first_name, CHARBUFFER, CHARBUFFER, acc.last_name, ADDRBUFFER,
-           ADDRBUFFER, acc.address, PESEL_LENGTH, PESEL_LENGTH, acc.pesel_number, BALANCE_SIZE_C,
+    printf("| %*.*u | %-*s | %-*s | %-*s | %-*s | %-*s | %-*.*f | %-*.*f | %-*.*f |\n", ID_LEN,
+           ID_LEN, acc.id, IBAN_LENGTH, acc.account_number, CHARBUFFER, acc.first_name, CHARBUFFER,
+           acc.last_name, ADDRBUFFER, acc.address, PESEL_LENGTH, acc.pesel_number, BALANCE_SIZE_C,
            PRECISION, acc.balance, LOAN_SIZE_C, PRECISION, acc.bank_loan, INTERESET_SIZE_C,
            PRECISION, acc.interest);
     printLine();

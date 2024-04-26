@@ -76,7 +76,6 @@ void chooseModifyingOperation()
         functionPointer = &payDebt;
         break;
     default:
-        printf("Invalid operation\n");
         return;
     }
     if (confimationOfAction(key - '0') && key != -1)
@@ -100,7 +99,6 @@ void chooseDisplayOperation()
         functionPointer = &searchList;
         break;
     default:
-        printf("Invalid operation\n");
         return;
     }
     (*functionPointer)();
