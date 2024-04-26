@@ -93,7 +93,7 @@ uint32_t getLastID()
         return 0;
     }
     account_t last;
-    fseek(seek_file, -sizeof(account_t), SEEK_END);
+    if(fseek(seek_file, -sizeof(account_t), SEEK_END) != 0) return 0;
     fread(&last, sizeof(account_t), 1, seek_file);
     fclose(seek_file);
     return last.id;
