@@ -6,44 +6,34 @@
 #include <string.h>
 #include <time.h>
 
-void getPESEL(account_t *new)
+void getPESEL(Account_t *new)
 {
     PESEL buffer;
     do
     {
-        system("clear");
-        printf("Enter your PESEL: ");
-        getString(buffer, PESEL_LENGTH + 1);
+        getString(buffer, PESEL_LENGTH + 1, "Enter your PESEL: ", true);
     } while (strlen(buffer) != PESEL_LENGTH || !checkDigits(buffer));
     strcpy(new->pesel_number, buffer);
 }
-void getName(account_t *new)
+void getName(Account_t *new)
 {
-    system("clear");
-    printf("Enter first name: ");
-    getString(new->first_name, CHARBUFFER);
-    system("clear");
-    printf("Enter surname: ");
-    getString(new->last_name, CHARBUFFER);
+    getString(new->first_name, CHARBUFFER, "Enter first name: ", true);
+    getString(new->last_name, CHARBUFFER , "Enter surname: ", true);
 }
-void getLocation(account_t *new)
+void getLocation(Account_t *new)
 {
-    system("clear");
-    printf("Enter address: ");
-    getString(new->address, ADDRBUFFER);
+    getString(new->address, ADDRBUFFER, "Enter address: ", true);
 }
-void getBalance(account_t *new)
+void getBalance(Account_t *new)
 {
-    system("clear");
     new->balance = getDouble(CASH_MIN, CASH_MAX, "current balance");
 }
-void getLoanInfo(account_t *new)
+void getLoanInfo(Account_t *new)
 {
-    system("clear");
     new->bank_loan = getDouble(CASH_MIN, CASH_MAX, "current loan");
     new->interest = (1 + BANK_INTEREST) * new->bank_loan / MONTHS_OF_PAYMENT;
 }
-void generateIBAN(account_t *new)
+void generateIBAN(Account_t *new)
 {
     IBAN to_be_generated;
     do
@@ -72,8 +62,8 @@ bool isIBANoverlapping(IBAN check_val)
         printf("Error opening file!\n");
         return false;
     }
-    account_t check;
-    while (fread(&check, sizeof(account_t), 1, check_f))
+    Account_t check;
+    while (fread(&check, sizeof(Account_t), 1, check_f))
     {
         if (strcmp(check.account_number, check_val) == 0)
         {
@@ -92,15 +82,15 @@ uint32_t getLastID()
         printf("Error opening file!\n");
         return 0;
     }
-    account_t last;
-    if(fseek(seek_file, -sizeof(account_t), SEEK_END) != 0) return 0;
-    fread(&last, sizeof(account_t), 1, seek_file);
+    Account_t last;
+    if(fseek(seek_file, -sizeof(Account_t), SEEK_END) != 0) return 0;
+    fread(&last, sizeof(Account_t), 1, seek_file);
     fclose(seek_file);
     return last.id;
 }
 void createAccount()
 {
-    account_t new;
+    Account_t new;
     new.id = getLastID() + 1;
     generateIBAN(&new);
     getPESEL(&new);
@@ -114,6 +104,6 @@ void createAccount()
         printf("Error opening file!\n");
         return;
     }
-    fwrite(&new, sizeof(account_t), 1, append_file);
+    fwrite(&new, sizeof(Account_t), 1, append_file);
     fclose(append_file);
 }

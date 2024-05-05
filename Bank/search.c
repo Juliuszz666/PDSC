@@ -3,41 +3,39 @@
 #include <stdlib.h>
 #include <string.h>
 
-bool findName(account_t ref, Fixed_string key)
+bool findName(Account_t ref, Fixed_string key)
 {
     return strstr(ref.first_name, key) != NULL;
 }
-bool findSurname(account_t ref, Fixed_string key)
+bool findSurname(Account_t ref, Fixed_string key)
 {
     return strstr(ref.last_name, key) != NULL;
 }
-bool findAddress(account_t ref, Fixed_string key)
+bool findAddress(Account_t ref, Fixed_string key)
 {
     return strstr(ref.address, key) != NULL;
 }
-bool findPESEL(account_t ref, Fixed_string key)
+bool findPESEL(Account_t ref, Fixed_string key)
 {
     return strstr(ref.pesel_number, key) != NULL;
 }
-bool findAccountNumber(account_t ref, Fixed_string key)
+bool findAccountNumber(Account_t ref, Fixed_string key)
 {
     return strstr(ref.account_number, key) != NULL;
 }
 
 void getSearchKey(char *search_key, short len)
 {
-    system("clear");
-    printf("Enter search key: ");
-    getString(search_key, len);
+    getString(search_key, len, "Enter search key: ", true);
 }
 void searchList()
 {
     printSearchOptions();
-    bool (*searchFun)(account_t ref, Fixed_string key);
+    bool (*searchFun)(Account_t ref, Fixed_string key);
     short len = CHARBUFFER;
     Fixed_string search_type;
     Address search_key;
-    getString(search_type, CHARBUFFER);
+    getString(search_type, CHARBUFFER, "", false);
     if (strcmp(search_type, "acc num") == 0)
     {
         searchFun = &findAccountNumber;

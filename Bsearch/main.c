@@ -34,7 +34,7 @@ int main()
         double arr_double[] = {1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 11};
         double key_double = i + 0.1 * i;
         successful_tests += run_test(arr_double, 10, sizeof(double), &key_double,
-                                     &arr_double[i - 1], compareDouble);
+                                    &arr_double[i - 1], compareDouble);
     }
     printf("Number of successful tests: %d\n", successful_tests);
     for (int i = 0; i < 10; i++)

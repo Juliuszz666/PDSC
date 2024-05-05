@@ -7,6 +7,8 @@
 
 #define DATA_FILE "clients.dat"
 
+#define BUFFER 256
+
 #define IBAN_LENGTH 26
 #define PESEL_LENGTH 11
 
@@ -49,6 +51,6 @@ typedef struct
     double balance;
     double bank_loan;
     double interest;
-} account_t;
+} Account_t;
 
 #endif //__DEFS_H__

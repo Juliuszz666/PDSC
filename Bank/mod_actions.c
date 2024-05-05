@@ -11,8 +11,8 @@ void transferMoney()
 {
     bool source_found = false;
     bool destination_found = false;
-    account_t source = findAccount("source ", &source_found);
-    account_t destination = findAccount("destination ", &destination_found);
+    Account_t source = findAccount("source ", &source_found);
+    Account_t destination = findAccount("destination ", &destination_found);
     if (!source_found || !destination_found)
     {
         printf("One of the accounts was not found\n");
@@ -38,7 +38,7 @@ void transferMoney()
 void makeDeposit()
 {
     bool found = false;
-    account_t deposit_acc = findAccount("", &found);
+    Account_t deposit_acc = findAccount("", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -63,7 +63,7 @@ void makeDeposit()
 void makeWithdrawal()
 {
     bool found = false;
-    account_t withdrawal_acc = findAccount("", &found);
+    Account_t withdrawal_acc = findAccount("", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -88,7 +88,7 @@ void makeWithdrawal()
 void takeLoan()
 {
     bool found = false;
-    account_t loan_acc = findAccount("", &found);
+    Account_t loan_acc = findAccount("", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -114,7 +114,7 @@ void takeLoan()
 void payDebt()
 {
     bool found = false;
-    account_t debt_acc = findAccount("", &found);
+    Account_t debt_acc = findAccount("debt", &found);
     if (!found)
     {
         printf("Account was not found\n");

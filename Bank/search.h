@@ -6,10 +6,10 @@
 
 void searchList();
 void getSearchKey(char *search_key, short len);
-bool findName(account_t ref, Fixed_string key);
-bool findSurname(account_t ref, Fixed_string key);
-bool findAddress(account_t ref, Fixed_string key);
-bool findPESEL(account_t ref, Fixed_string key);
-bool findAccountNumber(account_t ref, Fixed_string key);
+bool findName(Account_t ref, Fixed_string key);
+bool findSurname(Account_t ref, Fixed_string key);
+bool findAddress(Account_t ref, Fixed_string key);
+bool findPESEL(Account_t ref, Fixed_string key);
+bool findAccountNumber(Account_t ref, Fixed_string key);
 
 #endif // __SEARCH_H__

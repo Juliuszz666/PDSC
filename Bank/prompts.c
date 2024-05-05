@@ -75,14 +75,21 @@ void printHelpMenu()
     printf("Press q/Q to continue after every interaction\n");
     waitingForQuit();
 }
-void getString(char *str, int bufsiz)
+void getString(char *str, int size, const char *msg, bool clear)
 {
-    fgets(str, bufsiz, stdin);
-    if (strlen(str) >= bufsiz - 1)
+    char buffer[BUFFER];
+    do
     {
-        while (getchar() != '\n' && getchar() != EOF)
-            ;
-    }
+        if(clear) system("clear");
+        printf("%s", msg);
+        fgets(buffer, BUFFER, stdin);
+        if (strlen(buffer) >= BUFFER - 1)
+        {
+            while (getchar() != '\n' && getchar() != EOF)
+                ;
+        }
+    } while (strlen(buffer) > size || strlen(buffer) == 1);
+    strncpy(str, buffer, size);
     str[strcspn(str, "\n")] = '\0';
 }
 bool checkDigits(char *string)
@@ -98,16 +105,16 @@ double getDouble(double min, double max, const char *msg)
 {
     double value;
     char buffer[CHARBUFFER];
+    char message[BUFFER];
+    sprintf(message, "Enter value of %s: ", msg);
     do
     {
-        system("clear");
-        printf("Enter value of %s: ", msg);
-        getString(buffer, CHARBUFFER);
+        getString(buffer, CHARBUFFER, message, true);
         value = strtod(buffer, NULL);
     } while (value <= min || value > max || !checkDigits(buffer));
     return value;
 }
-void printAccount(account_t acc)
+void printAccount(Account_t acc)
 {
     printf("| %*.*u | %-*s | %-*s | %-*s | %-*s | %-*s | %-*.*f | %-*.*f | %-*.*f |\n", ID_LEN,
            ID_LEN, acc.id, IBAN_LENGTH, acc.account_number, CHARBUFFER, acc.first_name, CHARBUFFER,
@@ -128,7 +135,7 @@ void printAllList()
 {
     printAccounts(NULL, NULL);
 }
-void printAccounts(Fixed_string key, bool (*condition)(account_t ref, Fixed_string key))
+void printAccounts(Fixed_string key, bool (*condition)(Account_t ref, Fixed_string key))
 {
     FILE *print_f = fopen(DATA_FILE, "rb");
     if (print_f == NULL)
@@ -136,7 +143,7 @@ void printAccounts(Fixed_string key, bool (*condition)(account_t ref, Fixed_stri
         printf("Error opening file!\n");
         return;
     }
-    account_t print;
+    Account_t print;
     system("clear");
     printLine();
     printf("| %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s |\n",
@@ -145,7 +152,7 @@ void printAccounts(Fixed_string key, bool (*condition)(account_t ref, Fixed_stri
            PESEL_LENGTH, PESEL_LENGTH, "PESEL", BALANCE_SIZE_C, BALANCE_SIZE_C, "Balance",
            LOAN_SIZE_C, LOAN_SIZE_C, "Bank Loan", INTERESET_SIZE_C, INTERESET_SIZE_C, "Interest");
     printLine();
-    while (fread(&print, sizeof(account_t), 1, print_f))
+    while (fread(&print, sizeof(Account_t), 1, print_f))
     {
         if (condition == NULL || (condition != NULL && condition(print, key)))
         {
