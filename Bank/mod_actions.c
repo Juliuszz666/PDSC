@@ -1,11 +1,13 @@
 #include "mod_actions.h"
-#include "file_actions.h"
-#include "prompts.h"
-#include "typedefs.h"
+
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "file_actions.h"
+#include "prompts.h"
+#include "typedefs.h"
 
 void transferMoney()
 {
@@ -20,7 +22,7 @@ void transferMoney()
         return;
     }
     double transfer = getDouble(CASH_MIN, CASH_MAX, "transfer");
-    if (0 >= (source.balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
+    if (0 > (source.balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
         (destination.balance + transfer) >= CASH_MAX)
     {
         errno = ERANGE;
@@ -31,14 +33,22 @@ void transferMoney()
     {
         source.balance -= transfer;
         destination.balance += transfer;
-        printSuccess();
     }
-    updateTransfer(source, destination);
+    Account_t accs[] = {source, destination};
+    if (confirmation(accs, true))
+    {
+        printSuccess();
+        updateTransfer(source, destination);
+    }
+    else
+    {
+        printAbort();
+    }
 }
 void makeDeposit()
 {
     bool found = false;
-    Account_t deposit_acc = findAccount("", &found);
+    Account_t deposit_acc = findAccount("deposit", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -56,14 +66,21 @@ void makeDeposit()
     else
     {
         deposit_acc.balance += deposit_amount;
-        printSuccess();
     }
-    updateAccount(deposit_acc);
+    if (confirmation(&deposit_acc, false))
+    {
+        printSuccess();
+        updateAccount(deposit_acc);
+    }
+    else
+    {
+        printAbort();
+    }
 }
 void makeWithdrawal()
 {
     bool found = false;
-    Account_t withdrawal_acc = findAccount("", &found);
+    Account_t withdrawal_acc = findAccount("withdrawal", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -72,7 +89,7 @@ void makeWithdrawal()
     }
     double withdrawal_amount = getDouble(CASH_MIN, CASH_MAX, "withdraw");
     if (withdrawal_amount >= CASH_MAX || withdrawal_amount < 0 ||
-        0 >= (withdrawal_acc.balance - withdrawal_amount))
+        0 > (withdrawal_acc.balance - withdrawal_amount))
     {
         errno = ERANGE;
         printERANGE();
@@ -81,14 +98,21 @@ void makeWithdrawal()
     else
     {
         withdrawal_acc.balance -= withdrawal_amount;
+    }
+    if (confirmation(&withdrawal_acc, false))
+    {
+        updateAccount(withdrawal_acc);
         printSuccess();
     }
-    updateAccount(withdrawal_acc);
+    else
+    {
+        printAbort();
+    }
 }
 void takeLoan()
 {
     bool found = false;
-    Account_t loan_acc = findAccount("", &found);
+    Account_t loan_acc = findAccount("loan", &found);
     if (!found)
     {
         printf("Account was not found\n");
@@ -107,9 +131,16 @@ void takeLoan()
         loan_acc.balance += loan;
         loan_acc.interest = (1 + BANK_INTEREST) * (loan_acc.bank_loan + loan) / MONTHS_OF_PAYMENT;
         loan_acc.bank_loan += loan_acc.interest * MONTHS_OF_PAYMENT;
-        printSuccess();
     }
-    updateAccount(loan_acc);
+    if (confirmation(&loan_acc, false))
+    {
+        printSuccess();
+        updateAccount(loan_acc);
+    }
+    else
+    {
+        printAbort();
+    }
 }
 void payDebt()
 {
@@ -132,11 +163,18 @@ void payDebt()
             (debt_acc.bank_loan >= debt_acc.interest) ? debt_acc.interest : debt_acc.bank_loan;
         debt_acc.bank_loan -=
             (debt_acc.bank_loan >= debt_acc.interest) ? debt_acc.interest : debt_acc.bank_loan;
-        printSuccess();
     }
     if (debt_acc.bank_loan == 0)
     {
         debt_acc.interest = 0;
     }
-    updateAccount(debt_acc);
+    if (confirmation(&debt_acc, false))
+    {
+        updateAccount(debt_acc);
+        printSuccess();
+    }
+    else
+    {
+        printAbort();
+    }
 }

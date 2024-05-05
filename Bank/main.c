@@ -1,7 +1,6 @@
 #include "main.h"
 
 void chooseAction();
-bool confimationOfAction(int action_no);
 void chooseModifyingOperation();
 void chooseDisplayOperation();
 
@@ -78,10 +77,7 @@ void chooseModifyingOperation()
     default:
         return;
     }
-    if (confimationOfAction(key - '0') && key != -1)
-    {
-        (*functionPointer)();
-    }
+    (*functionPointer)();
 }
 void chooseDisplayOperation()
 {
@@ -102,16 +98,4 @@ void chooseDisplayOperation()
         return;
     }
     (*functionPointer)();
-}
-bool confimationOfAction(int action_no)
-{
-    system("clear");
-    printf("Do you want to performs this action number %d?\nPress Y/y if yes, otherwise press "
-           "anything else\n",
-           action_no);
-    int action = getchar();
-    while (getchar() != '\n')
-        ;
-
-    return (action == 'y' || action == 'Y');
 }

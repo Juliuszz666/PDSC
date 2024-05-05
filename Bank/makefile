@@ -19,4 +19,4 @@ acc_creation.o: acc_creation.c acc_creation.h typedefs.h
 file_actions.o: file_actions.c file_actions.h typedefs.h
 
 clean:
-	-rm main.o prints.o main
+	-rm main *.o

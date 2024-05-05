@@ -45,6 +45,12 @@ void printSuccess()
     printf("Operation sucessful\n");
     waitingForQuit();
 }
+void printAbort()
+{
+    system("clear");
+    printf("Operation aborted\n");
+    waitingForQuit();
+}
 void waitingForQuit()
 {
     char quit;
@@ -80,7 +86,8 @@ void getString(char *str, int size, const char *msg, bool clear)
     char buffer[BUFFER];
     do
     {
-        if(clear) system("clear");
+        if (clear)
+            system("clear");
         printf("%s", msg);
         fgets(buffer, BUFFER, stdin);
         if (strlen(buffer) >= BUFFER - 1)
@@ -135,6 +142,14 @@ void printAllList()
 {
     printAccounts(NULL, NULL);
 }
+void printListHeader()
+{
+    printf("| %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s |\n",
+           ID_LEN, ID_LEN, "ID", IBAN_LENGTH, IBAN_LENGTH, "Account Number", CHARBUFFER, CHARBUFFER,
+           "First Name", CHARBUFFER, CHARBUFFER, "Last Name", ADDRBUFFER, ADDRBUFFER, "Address",
+           PESEL_LENGTH, PESEL_LENGTH, "PESEL", BALANCE_SIZE_C, BALANCE_SIZE_C, "Balance",
+           LOAN_SIZE_C, LOAN_SIZE_C, "Bank Loan", INTERESET_SIZE_C, INTERESET_SIZE_C, "Interest");
+}
 void printAccounts(Fixed_string key, bool (*condition)(Account_t ref, Fixed_string key))
 {
     FILE *print_f = fopen(DATA_FILE, "rb");
@@ -146,11 +161,7 @@ void printAccounts(Fixed_string key, bool (*condition)(Account_t ref, Fixed_stri
     Account_t print;
     system("clear");
     printLine();
-    printf("| %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s | %-*.*s |\n",
-           ID_LEN, ID_LEN, "ID", IBAN_LENGTH, IBAN_LENGTH, "Account Number", CHARBUFFER, CHARBUFFER,
-           "First Name", CHARBUFFER, CHARBUFFER, "Last Name", ADDRBUFFER, ADDRBUFFER, "Address",
-           PESEL_LENGTH, PESEL_LENGTH, "PESEL", BALANCE_SIZE_C, BALANCE_SIZE_C, "Balance",
-           LOAN_SIZE_C, LOAN_SIZE_C, "Bank Loan", INTERESET_SIZE_C, INTERESET_SIZE_C, "Interest");
+    printListHeader();
     printLine();
     while (fread(&print, sizeof(Account_t), 1, print_f))
     {

@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include <stdbool.h>
 
+void createAccount();
 void getPESEL(Account_t *newaccount);
 void getName(Account_t *newaccount);
 void getLocation(Account_t *newaccount);

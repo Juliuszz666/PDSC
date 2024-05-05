@@ -1,4 +1,5 @@
 #include "acc_creation.h"
+#include "file_actions.h"
 #include "prompts.h"
 #include <assert.h>
 #include <stdio.h>
@@ -18,7 +19,7 @@ void getPESEL(Account_t *new)
 void getName(Account_t *new)
 {
     getString(new->first_name, CHARBUFFER, "Enter first name: ", true);
-    getString(new->last_name, CHARBUFFER , "Enter surname: ", true);
+    getString(new->last_name, CHARBUFFER, "Enter surname: ", true);
 }
 void getLocation(Account_t *new)
 {
@@ -83,7 +84,8 @@ uint32_t getLastID()
         return 0;
     }
     Account_t last;
-    if(fseek(seek_file, -sizeof(Account_t), SEEK_END) != 0) return 0;
+    if (fseek(seek_file, -sizeof(Account_t), SEEK_END) != 0)
+        return 0;
     fread(&last, sizeof(Account_t), 1, seek_file);
     fclose(seek_file);
     return last.id;
@@ -104,6 +106,14 @@ void createAccount()
         printf("Error opening file!\n");
         return;
     }
-    fwrite(&new, sizeof(Account_t), 1, append_file);
+    if (confirmation(&new, false))
+    {
+        fwrite(&new, sizeof(Account_t), 1, append_file);
+        printSuccess();
+    }
+    else
+    {
+        printAbort();
+    }
     fclose(append_file);
 }

@@ -1,7 +1,23 @@
 #include "file_actions.h"
+#include "prompts.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+bool confirmation(Account_t accounts[], bool is_transfer)
+{
+    system("clear");
+    printListHeader();
+    printLine();
+    for (int i = 0; i < (is_transfer ? 2 : 1); i++)
+    {
+        printAccount(accounts[i]);
+    }
+    printf("Do you want to performs this action?\nIf yes pres Y/y -- otherwise anything else\n");
+    int action = getchar();
+    while (getchar() != '\n')
+        ;
+    return (action == 'y' || action == 'Y');
+}
 void updateAccount(Account_t updated)
 {
     FILE *update_f = fopen(DATA_FILE, "rb+");
