@@ -71,4 +71,4 @@ Bank/main
 Strol/test_std_strtol
 Strol/test_my_strtol
 *.py
-*/*.dat
+*.dat
