@@ -3,6 +3,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void perfromTransferUpdate(Account_t accs[])
+{
+    if (confirmation(accs, true))
+    {
+        printSuccess();
+        updateTransfer(accs[0], accs[1]);
+    }
+    else
+    {
+        printAbort();
+    }
+}
+void performOtherUpdate(Account_t acc)
+{
+    if (confirmation(&acc, false))
+    {
+        printSuccess();
+        updateAccount(acc);
+    }
+    else
+    {
+        printAbort();
+    }
+}
 bool confirmation(Account_t accounts[], bool is_transfer)
 {
     system("clear");

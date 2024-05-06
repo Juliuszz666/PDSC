@@ -33,10 +33,10 @@ void printDisplayOptions()
     printf("***\t\t\t1.\tList all accounts\t\t\t***\n");
     printf("***\t\t\t2.\tSearch an account\t\t\t***\n");
 }
-void printERANGE()
+void printOutOfRange()
 {
     system("clear");
-    perror("Value overflow, operation terminated");
+    printf("Value overflow, operation terminated\n");
     waitingForQuit();
 }
 void printSuccess()

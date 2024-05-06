@@ -9,7 +9,7 @@ void printActions();
 void printModifyingOptions();
 void printDisplayOptions();
 void waitingForQuit();
-void printERANGE();
+void printOutOfRange();
 void printSuccess();
 void printAbort();
 void printSearchOptions();

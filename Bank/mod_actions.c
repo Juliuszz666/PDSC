@@ -1,6 +1,5 @@
 #include "mod_actions.h"
 
-#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +24,7 @@ void transferMoney()
     if (0 > (source.balance - transfer) || transfer >= CASH_MAX || transfer <= 0 ||
         (destination.balance + transfer) >= CASH_MAX)
     {
-        errno = ERANGE;
-        printERANGE();
+        printOutOfRange();
         return;
     }
     else
@@ -35,15 +33,7 @@ void transferMoney()
         destination.balance += transfer;
     }
     Account_t accs[] = {source, destination};
-    if (confirmation(accs, true))
-    {
-        printSuccess();
-        updateTransfer(source, destination);
-    }
-    else
-    {
-        printAbort();
-    }
+    perfromTransferUpdate(accs);
 }
 void makeDeposit()
 {
@@ -59,23 +49,15 @@ void makeDeposit()
     if (deposit_amount >= CASH_MAX || deposit_amount < 0 ||
         (deposit_acc.balance + deposit_amount) >= CASH_MAX)
     {
-        errno = ERANGE;
-        printERANGE();
+        printOutOfRange();
         return;
     }
     else
     {
         deposit_acc.balance += deposit_amount;
     }
-    if (confirmation(&deposit_acc, false))
-    {
-        printSuccess();
-        updateAccount(deposit_acc);
-    }
-    else
-    {
-        printAbort();
-    }
+    performOtherUpdate(deposit_acc);
+
 }
 void makeWithdrawal()
 {
@@ -91,23 +73,14 @@ void makeWithdrawal()
     if (withdrawal_amount >= CASH_MAX || withdrawal_amount < 0 ||
         0 > (withdrawal_acc.balance - withdrawal_amount))
     {
-        errno = ERANGE;
-        printERANGE();
+        printOutOfRange();
         return;
     }
     else
     {
         withdrawal_acc.balance -= withdrawal_amount;
     }
-    if (confirmation(&withdrawal_acc, false))
-    {
-        updateAccount(withdrawal_acc);
-        printSuccess();
-    }
-    else
-    {
-        printAbort();
-    }
+    performOtherUpdate(withdrawal_acc);
 }
 void takeLoan()
 {
@@ -122,8 +95,7 @@ void takeLoan()
     double loan = getDouble(CASH_MIN, CASH_MAX, "loan");
     if ((loan_acc.balance + loan) >= CASH_MAX || loan >= LOAN_MAX || loan <= 0)
     {
-        errno = ERANGE;
-        printERANGE();
+        printOutOfRange();
         return;
     }
     else
@@ -132,15 +104,7 @@ void takeLoan()
         loan_acc.interest = (1 + BANK_INTEREST) * (loan_acc.bank_loan + loan) / MONTHS_OF_PAYMENT;
         loan_acc.bank_loan += loan_acc.interest * MONTHS_OF_PAYMENT;
     }
-    if (confirmation(&loan_acc, false))
-    {
-        printSuccess();
-        updateAccount(loan_acc);
-    }
-    else
-    {
-        printAbort();
-    }
+    performOtherUpdate(loan_acc);
 }
 void payDebt()
 {
@@ -152,10 +116,9 @@ void payDebt()
         waitingForQuit();
         return;
     }
-    if (0 >= (debt_acc.balance - debt_acc.interest) || debt_acc.bank_loan == 0)
+    if (0 > (debt_acc.balance - debt_acc.interest) || debt_acc.bank_loan == 0)
     {
-        errno = ERANGE;
-        printERANGE();
+        printOutOfRange();
     }
     else
     {
@@ -168,13 +131,5 @@ void payDebt()
     {
         debt_acc.interest = 0;
     }
-    if (confirmation(&debt_acc, false))
-    {
-        updateAccount(debt_acc);
-        printSuccess();
-    }
-    else
-    {
-        printAbort();
-    }
+    performOtherUpdate(debt_acc);
 }
