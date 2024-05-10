@@ -20,7 +20,9 @@ void printListHeader();
 void printAccount(Account_t acc);
 void printAccounts(Fixed_string key, bool (*condition)(Account_t ref, Fixed_string key));
 void getString(char *str, int bufsiz, const char *msg, bool clear);
-bool checkDigits(char *buff);
+bool checkDigits(char *str);
+bool checkLetters(char *str);
+bool noLetters(char* str);
 double getDouble(double min, double max, const char *msg);
 
-#endif // __PRINTS_H__
+#endif // PROMPTS_H__

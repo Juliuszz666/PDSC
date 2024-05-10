@@ -18,8 +18,14 @@ void getPESEL(Account_t *new)
 }
 void getName(Account_t *new)
 {
-    getString(new->first_name, CHARBUFFER, "Enter first name: ", true);
-    getString(new->last_name, CHARBUFFER, "Enter surname: ", true);
+    do
+    {
+        getString(new->first_name, CHARBUFFER, "Enter first name: ", true);
+    } while (!checkLetters(new->first_name));
+    do
+    {
+        getString(new->last_name, CHARBUFFER, "Enter surname: ", true);
+    } while (!checkLetters(new->last_name));
 }
 void getLocation(Account_t *new)
 {

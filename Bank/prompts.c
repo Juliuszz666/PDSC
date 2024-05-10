@@ -99,6 +99,24 @@ void getString(char *str, int size, const char *msg, bool clear)
     strncpy(str, buffer, size);
     str[strcspn(str, "\n")] = '\0';
 }
+bool checkLetters(char *string)
+{
+    for (size_t i = 0; i < strlen(string); i++)
+    {
+        if (!isalpha(string[i]))
+            return false;
+    }
+    return true;
+}
+bool noLetters(char *string)
+{
+    for (size_t i = 0; i < strlen(string); i++)
+    {
+        if (isalpha(string[i]))
+            return false;
+    }
+    return true;
+}
 bool checkDigits(char *string)
 {
     for (size_t i = 0; i < strlen(string); i++)
@@ -118,7 +136,8 @@ double getDouble(double min, double max, const char *msg)
     {
         getString(buffer, CHARBUFFER, message, true);
         value = strtod(buffer, NULL);
-    } while (value <= min || value > max);
+    } while (value <= min || value > max || !noLetters(buffer));
+
     return value;
 }
 void printAccount(Account_t acc)
