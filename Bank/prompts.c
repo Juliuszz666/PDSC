@@ -118,7 +118,7 @@ double getDouble(double min, double max, const char *msg)
     {
         getString(buffer, CHARBUFFER, message, true);
         value = strtod(buffer, NULL);
-    } while (value <= min || value > max || !checkDigits(buffer));
+    } while (value <= min || value > max);
     return value;
 }
 void printAccount(Account_t acc)
